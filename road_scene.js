@@ -66,17 +66,27 @@ class road_scene extends Scene_Component
         
 
         let road_transform = Mat4.identity()
+        let squeeze_torus = true
+        let t_scale = 1.0
+
+        if (squeeze_torus) {
+          t_scale = 1/5
+        }
+        else {
+          t_scale = 1.0
+        }
+
         // TODO You can scale here by uncommenting
-        // road_transform = road_transform.times(Mat4.scale([1., 1/2, 1.]))
+        road_transform = road_transform.times(Mat4.scale([1., t_scale, 1.]))
         
 
         road_transform = road_transform.times(Mat4.rotation(((2 * Math.PI) / 3) * this.rotation_angle, [0,0,-1]))
         this.shapes.torus.draw(graphics_state, road_transform, this.materials.phong2)
 
-        const torus_displacement = 2
+        const torus_displacement = 2 
         let road_view_1 = Mat4.identity()
         road_view_1 = road_view_1.times(Mat4.rotation(Math.PI/2, [0,1,0]))
-        road_view_1 = road_view_1.times(Mat4.translation([0,torus_displacement + 1,1.5]))
+        road_view_1 = road_view_1.times(Mat4.translation([0,torus_displacement-1,1.5]))
         this.road_view1 = road_view_1
 
         // downscale to make smaller box
@@ -84,7 +94,7 @@ class road_scene extends Scene_Component
         // translate torus displacement plus scale
         // scale of the car, sample scale
         let s_x = 1/5
-        car_transform  = road_view_1.times(Mat4.translation([0, -(torus_displacement+1)+torus_displacement+s_x, 0]))
+        car_transform  = road_view_1.times(Mat4.translation([0, -(torus_displacement*t_scale+1)+torus_displacement*t_scale+s_x, 0]))
         car_transform = car_transform.times(Mat4.scale([s_x,s_x,s_x]))
         this.shapes.box.draw( graphics_state, car_transform, this.materials.phong );
         
@@ -93,14 +103,14 @@ class road_scene extends Scene_Component
         // use road transform then translate out and draw small scale
         let sample_object_transform = road_transform.times(Mat4.translation([torus_displacement+1, 0, 0]))
         sample_object_transform = sample_object_transform.times(Mat4.scale([1/5, 1/5, 1/5]))
-        this.shapes.box.draw( graphics_state, sample_object_transform, this.materials.phong2 );
+        this.shapes.box.draw( graphics_state, sample_object_transform, this.materials.phong );
         
         // make another sample box
         // use road transform then translate out but with + Ty
         // Here you can translate out X and Y as you want to create and append objects onto the torus
         let sample_object_transform_2 = road_transform.times(Mat4.translation([torus_displacement+1, 1, 0]))
         sample_object_transform_2 = sample_object_transform_2.times(Mat4.scale([1/5, 1/5, 1/5]))
-        this.shapes.box.draw( graphics_state, sample_object_transform_2, this.materials.phong2 );
+        this.shapes.box.draw( graphics_state, sample_object_transform_2, this.materials.phong );
 
 
         if (this.attached) {
