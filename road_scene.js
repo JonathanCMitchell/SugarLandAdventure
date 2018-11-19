@@ -95,7 +95,7 @@ class road_scene extends Scene_Component
 
         // Note: X, Z switch 
         // View to see where camera is
-        this.shapes.axis.draw(graphics_state, this.road_view1, this.materials.phong)
+        // this.shapes.axis.draw(graphics_state, this.road_view1, this.materials.phong)
 
         // TODO Rotate aroud z a bit
 
@@ -112,6 +112,7 @@ class road_scene extends Scene_Component
         // TODO: account for the angle so that we can place on the actual torus
         // use road transform then translate out and draw small scale
         let sample_object_transform = road_transform.times(Mat4.translation([torus_displacement+1, 0, 0]))
+        sample_object_transform = sample_object_transform.times(Mat4.translation([0., 0., -2/5]))
         sample_object_transform = sample_object_transform.times(Mat4.scale([1/5, 1/5, 1/5]))
         this.shapes.box.draw( graphics_state, sample_object_transform, this.materials.phong );
         
@@ -119,11 +120,24 @@ class road_scene extends Scene_Component
         // use road transform then translate out but with + Ty
         // Here you can translate out X and Y as you want to create and append objects onto the torus
         let sample_object_transform_2 = road_transform.times(Mat4.translation([torus_displacement+1, 1, 0]))
+        sample_object_transform_2 = sample_object_transform_2.times(Mat4.translation([0., 0., 2/5]))
         sample_object_transform_2 = sample_object_transform_2.times(Mat4.scale([1/5, 1/5, 1/5]))
-        this.shapes.box.draw( graphics_state, sample_object_transform_2, this.materials.phong );
+        
+        // Translate in X a bit so its on the side of the road
+        // Translate by the torus width/2-1
+        this.shapes.axis.draw( graphics_state, sample_object_transform_2, this.materials.phong );
 
         // Ultimately these sample_object_transforms will form a list of transformation matrices that we can pass to the shape drawer 
         // in order to render buildings, etc.
+        // var sample_obj_transforms = []
+        // for (let i = 0; i < 10; i++) {
+        //   // push translate left
+             // increment rotation angle
+
+
+             // push transform right
+             // increment rotation angle 
+        // }
 
 
         if (this.attached) {
