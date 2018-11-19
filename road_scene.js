@@ -67,17 +67,19 @@ class road_scene extends Scene_Component
 
         let road_transform = Mat4.identity()
         let squeeze_torus = true
-        let t_scale = 1.0
+        let t_scale_y = 1.0
+        let t_scale_x = 1.5  
+        let t_scale_z = 1.5 
 
         if (squeeze_torus) {
-          t_scale = 1/5
+          t_scale_y = 1/20
         }
         else {
-          t_scale = 1.0
+          t_scale_y = 1.0
         }
 
         // TODO You can scale here by uncommenting
-        road_transform = road_transform.times(Mat4.scale([1., t_scale, 1.]))
+        road_transform = road_transform.times(Mat4.scale([t_scale_x, t_scale_y, t_scale_z]))
         
 
         road_transform = road_transform.times(Mat4.rotation(((2 * Math.PI) / 3) * this.rotation_angle, [0,0,-1]))
@@ -87,14 +89,22 @@ class road_scene extends Scene_Component
         let road_view_1 = Mat4.identity()
         road_view_1 = road_view_1.times(Mat4.rotation(Math.PI/2, [0,1,0]))
         road_view_1 = road_view_1.times(Mat4.translation([0,torus_displacement-1,1.5]))
+        // Draw axis shape with road view 
+        road_view_1 = road_view_1.times(Mat4.translation([0, -0.6,0]))
         this.road_view1 = road_view_1
+
+        // Note: X, Z switch 
+        // View to see where camera is
+        this.shapes.axis.draw(graphics_state, this.road_view1, this.materials.phong)
+
+        // TODO Rotate aroud z a bit
 
         // downscale to make smaller box
         let car_transform = Mat4.identity()
         // translate torus displacement plus scale
         // scale of the car, sample scale
         let s_x = 1/5
-        car_transform  = road_view_1.times(Mat4.translation([0, -(torus_displacement*t_scale+1)+torus_displacement*t_scale+s_x, 0]))
+        car_transform  = road_view_1.times(Mat4.translation([0, -(torus_displacement*t_scale_y+1)+torus_displacement*t_scale_y+s_x, 0]))
         car_transform = car_transform.times(Mat4.scale([s_x,s_x,s_x]))
         this.shapes.box.draw( graphics_state, car_transform, this.materials.phong );
         
@@ -111,6 +121,9 @@ class road_scene extends Scene_Component
         let sample_object_transform_2 = road_transform.times(Mat4.translation([torus_displacement+1, 1, 0]))
         sample_object_transform_2 = sample_object_transform_2.times(Mat4.scale([1/5, 1/5, 1/5]))
         this.shapes.box.draw( graphics_state, sample_object_transform_2, this.materials.phong );
+
+        // Ultimately these sample_object_transforms will form a list of transformation matrices that we can pass to the shape drawer 
+        // in order to render buildings, etc.
 
 
         if (this.attached) {
