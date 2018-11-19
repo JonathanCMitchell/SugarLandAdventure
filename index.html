@@ -8,6 +8,7 @@
 <script src= "dependencies.js" ></script>
 <!-- <script src=   "main-scene.js" ></script> -->
 <script src=   "road_scene.js" ></script>
+<script src=   "model_scene.js" ></script>
 </head>
 <body style="background: DarkGray">       <!-- Begin typing your web page here. //-->
 
@@ -16,7 +17,9 @@
 <script> "use strict"     // ********************* THE ENTRY POINT OF YOUR WHOLE PROGRAM STARTS HERE ********************* 
                                            // Use this code to embed a widget into any web page.  The widget inclues a 3D WebGL area
                                            // (an HTML canvas) and various panels of controls.
-  const scenes = ["road_scene",    // First, list the names of scenes we will add to our canvas.  These will register 
+  const scenes = [
+		"model_scene",
+		"road_scene",    // First, list the names of scenes we will add to our canvas.  These will register 
                    "Global_Info_Table"     ]; // themselves with this widget's Canvas_Manager so that their code can be called upon
                                                 // every time a draw / keyboard / mouse event happens on the web page.
   new Canvas_Widget( "main-canvas", scenes );             // Use the Canvas_Widget class to display the WebGL demo.  Pass in
