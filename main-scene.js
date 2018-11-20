@@ -37,7 +37,8 @@ class Assignment_Three_Scene extends Scene_Component
 //      // 
         this.box_grid = column_list
         
-
+        this.step_size = 1.
+        this.rotation_angle = Math.PI/30
 
 
         this.submit_shapes( context, shapes );
@@ -67,50 +68,35 @@ class Assignment_Three_Scene extends Scene_Component
         this.key_triggered_button( "View world",  [ "0" ], () => this.attached = () => this.initial_camera_location );
         this.key_triggered_button( "turn left",  [ "q" ], () => { 
           // transform with the current dt value
-          this.pause_rotation_left = !this.pause_rotation_left
-          this.in_turn_right = false
-          this.in_turn_left = true
+          // this.pause_rotation_left = !this.pause_rotation_left
+          // this.in_turn_right = false
+          // this.in_turn_left = true
+          let transformation_mtx = Mat4.identity()
+          this.transform_box_grid(transformation_mtx, 'rotate_left')
         });
         this.key_triggered_button( "turn right",  [ "e" ], () => { 
-          let transformation_mtx = this.camera_mat
-          transformation_mtx = transformation_mtx.times(Mat4.translation([0, -2, 0]))
-          transformation_mtx = this.get_rotate_right(transformation_mtx)
-
-
-          // pass in the current transformation matrix
-          this.transform_box_grid(transformation_mtx)
-
-          // this.pause_rotation_right = !this.pause_rotation_right
-          // this.in_turn_left = false
-          // this.in_turn_right = true
-
+        // Whatever you want to rotate around, make its X, Y, Z coordinates here
+        // This will translate around the origin
+          let transformation_mtx = Mat4.identity()
+          // transform one item
+          // this.transform_box_grid_item(transformation_mtx, 2, 2)
+          // this.transform_box_grid_item(transformation_mtx, 2, 3)
+          
+          this.transform_box_grid(transformation_mtx, 'rotate_right')
         });
         this.key_triggered_button( "Attach to world", [ "1" ], () => this.attached = () => this.attach_world );
         
         this.key_triggered_button( "move forward",  [ "c" ], () => { 
-
-          let transformation_mtx = Mat4.identity()
-          transformation_mtx = this.get_translate_forward(transformation_mtx)
+          const transformation_mtx = Mat4.identity()
+          // transformation_mtx = this.get_translate_forward(transformation_mtx, this.step_size)
           // pass in the current transformation matrix
-          this.transform_box_grid(transformation_mtx)
-
-          
-          // set everything else to false
-          this.in_turn_left = false
-          this.in_turn_right = false
+          this.transform_box_grid(transformation_mtx, 'move_forward')
         });
 
         this.key_triggered_button( "move backward",  [ "v" ], () => { 
-
-          let transformation_mtx = Mat4.identity()
-          transformation_mtx = this.get_translate_backward(transformation_mtx)
+          const transformation_mtx = Mat4.identity()
           // pass in the current transformation matrix
-          this.transform_box_grid(transformation_mtx)
-
-          
-          // set everything else to false
-          this.in_turn_left = false
-          this.in_turn_right = false
+          this.transform_box_grid(transformation_mtx, 'move_backward')
         });
         
       }
@@ -124,27 +110,79 @@ class Assignment_Three_Scene extends Scene_Component
         }
     }
 
-    transform_box_grid(transformation_mtx) {
-      console.log('button pressed inside transform_box_grid function')
-      this.box_grid = this.box_grid.map( row_list => row_list.map( (box) => box.times(transformation_mtx)));
+    render_box_grid_item(graphics_state, row, col) {
+    // render first item in the box grid
+    this.shapes.axis.draw(graphics_state, this.box_grid[row][col], this.materials.phong)
+    }
+
+    transform_box_grid_item(transformation_mtx, row=0, col=0) {
+        // save x,z
+      const x = this.box_grid[row][col][0][3]
+      const z = this.box_grid[row][col][2][3]
+
+
+
+
+      // Apply rotation around origin (using identity) will be replaced with camera x and camera z eventually  
+      // apply rotation
+      let rotation_mtx = transformation_mtx.times(Mat4.rotation(Math.PI/30, [0, 1, 0]))
+      
+
+      // translate out x,z _ cam_x cam_z
+      rotation_mtx = rotation_mtx.times(Mat4.translation([x, 0, z]))
+      // set to box grid coord
+      this.box_grid[row][col] = rotation_mtx
+    }
+
+    transform_box_grid(transformation_mtx, kind='') {
+
+      this.box_grid = this.box_grid.map( row_list => row_list.map( (box) => {
+      
+      if (kind == 'rotate_left') {
+       const x = box[0][3]
+       const z = box[2][3]
+
+       let M = transformation_mtx.times(Mat4.rotation(this.rotation_angle, [0, -1, 0]))
+       M = M.times(Mat4.translation([x, 0, z]))
+       return M
+
+      } else if (kind == 'rotate_right') {
+        const x = box[0][3]
+        const z = box[2][3]
+ 
+        let M = transformation_mtx.times(Mat4.rotation(this.rotation_angle, [0, 1, 0])) // then move up here
+        M = M.times(Mat4.translation([x, 0, z]))
+        return M 
+      } else if (kind == 'move_forward') {
+        return box.times(Mat4.translation([this.step_size, 0, 0]))
+      } else if (kind == 'move_backward') {
+        return box.times(Mat4.translation([-this.step_size, 0, 0]))
+      } else {
+        // do nothing
+        return box
+      }
+       
+
+       }));   
+      
       
     }
 
-    get_translate_forward(transformation_mtx) {
-      transformation_mtx= transformation_mtx.times(Mat4.translation([2., 0, 0]))
+    get_translate_forward(transformation_mtx, step_size) {
+      transformation_mtx= transformation_mtx.times(Mat4.translation([step_size, 0, 0]))
       return transformation_mtx
 
     }
 
 
-    get_translate_backward(transformation_mtx) {
-      transformation_mtx= transformation_mtx.times(Mat4.translation([-2., 0, 0]))
+    get_translate_backward(transformation_mtx, step_size) {
+      transformation_mtx= transformation_mtx.times(Mat4.translation([-step_size, 0, 0]))
       return transformation_mtx
 
     }
 
     get_rotate_right(transformation_mtx) {
-      transformation_mtx= transformation_mtx.times(Mat4.rotation(.1, [0, -1, 0]))
+      transformation_mtx= Mat4.identity().times(Mat4.rotation(Math.PI/30, [0, 1, 0]))
       return transformation_mtx
 
     }
@@ -173,7 +211,7 @@ class Assignment_Three_Scene extends Scene_Component
         //     this.rotation_angle_right = 0
         // }
 
-
+        this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
         
         
 
@@ -205,8 +243,9 @@ class Assignment_Three_Scene extends Scene_Component
         
         // this.transform_box_grid(transform_sample)
         this.render_box_grid(graphics_state)
+        // this.render_box_grid_item(graphics_state, 2, 2)
+        // this.render_box_grid_item(graphics_state, 2, 3)
 
-        console.log('render box grid')
         let camera_mat = Mat4.identity();
         camera_mat = camera_mat.times(Mat4.rotation(Math.PI/2, [0, -1.0, 0]))
         camera_mat = camera_mat.times(Mat4.translation([1, 2., 0]))
