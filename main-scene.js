@@ -22,10 +22,10 @@ class Assignment_Three_Scene extends Scene_Component
         
         //  Initialize model transform matrix of all cubes
         let column_list = []
-        for (var i = 0; i < 20; i+=2)
+        for (var i = 0; i < 30; i+=2)
         {
             let row_list = []
-            for (var j = 0; j < 20; j+=2)
+            for (var j = 0; j < 30; j+=2)
             {
                 // push to rowlist    
               let model_transform = Mat4.identity()
@@ -38,8 +38,8 @@ class Assignment_Three_Scene extends Scene_Component
 //      // 
         this.box_grid = column_list
         
-        this.step_size = .1
-        this.back_step_size = 0.1
+        this.step_size = .01
+        this.back_step_size = 0.005
         this.rotation_angle = Math.PI/30
 
 
@@ -50,7 +50,8 @@ class Assignment_Three_Scene extends Scene_Component
         this.materials =
           { 
             phong: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/gravel.jpg", true) } ),
-            phong1: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6})
+            phong1: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6}),
+            phong3: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/car.png", true)})
           }
          this.lights = [ new Light( Vec.of( -5,5,5,1 ), Color.of( 0,1,1,1 ), 100000 ) ];
          
@@ -63,7 +64,7 @@ class Assignment_Three_Scene extends Scene_Component
          this.in_turn_left = false
          this.in_turn_right = false
 
-         this.speed_limit = 2
+         this.speed_limit = 1
          
          this.state = {
            'accel': false,
@@ -91,7 +92,7 @@ class Assignment_Three_Scene extends Scene_Component
           // default is move forward
           this.transform_box_grid(transformation_mtx, 'move_forward')
           
-          this.step_size += 0.2
+          this.step_size += 0.02
           this.step_size = min(this.step_size, this.speed_limit)
         });
 
@@ -109,13 +110,14 @@ class Assignment_Three_Scene extends Scene_Component
 
           if ((this.step_size) > 0) {
             // push current step size to 0 to slow down
-            this.step_size -= 0.2
+            this.step_size -= 0.15
+
             this.transform_box_grid(transformation_mtx, 'move_forward')
           }
           else if (this.step_size <= 0) {
             this.step_size = 0
             this.transform_box_grid(transformation_mtx, 'move_backward')
-            this.back_step_size += 0.1
+            this.back_step_size += 0.01
             this.back_step_size = min(this.back_step_size, -2)
           }
         });
@@ -129,13 +131,13 @@ class Assignment_Three_Scene extends Scene_Component
             let transformation_mtx = Mat4.identity()
 
             if (this.state.accel) {
-              this.step_size -= 0.5
+              this.step_size -= 0.05
               // move forward while decreasing
               // include guard so you dont go the other way
               this.back_step_size = max(0, this.step_size)
               this.transform_box_grid(transformation_mtx, 'move_forward')
             } else if (this.state.decel) {
-              this.back_step_size -= 0.5
+              this.back_step_size -= 0.05
               this.back_step_size = max(0, this.back_step_size)
               // move backward while decreasing
               this.transform_box_grid(transformation_mtx, 'move_backward')
@@ -212,11 +214,11 @@ class Assignment_Three_Scene extends Scene_Component
         
       }
     render_box_grid(graphics_state) {
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < 15; i++)
         {
-            for(var j = 0; j < 10; j++)
+            for(var j = 0; j < 15; j++)
             {
-                this.shapes.axis.draw(graphics_state, this.box_grid[i][j], this.materials.phong)
+                this.shapes.box.draw(graphics_state, this.box_grid[i][j], this.materials.phong)
             }
         }
     }
@@ -355,7 +357,7 @@ class Assignment_Three_Scene extends Scene_Component
         camera_mat = camera_mat.times(Mat4.translation([1, 2., 0]))
         this.camera_mat = camera_mat
         this.attach_world = camera_mat
-//         this.shapes.axis.draw(graphics_state, camera_mat, this.materials.phong1)
+        this.shapes.box.draw(graphics_state, camera_mat.times(Mat4.translation([0, 0, 1])), this.materials.phong3)
 
 //         let camera_mat = Mat4.identity();
 //         camera_mat = camera_mat.times(Mat4.translation([0, 0, 30.1]));
