@@ -38,7 +38,8 @@ class Assignment_Three_Scene extends Scene_Component
 //      // 
         this.box_grid = column_list
         
-        this.step_size = .5
+        this.step_size = .1
+        this.back_step_size = 0.1
         this.rotation_angle = Math.PI/30
 
 
@@ -62,6 +63,7 @@ class Assignment_Three_Scene extends Scene_Component
          this.in_turn_left = false
          this.in_turn_right = false
 
+         this.speed_limit = 2
          
          this.state = {
            'accel': false,
@@ -88,26 +90,69 @@ class Assignment_Three_Scene extends Scene_Component
           let transformation_mtx = Mat4.identity()
           // default is move forward
           this.transform_box_grid(transformation_mtx, 'move_forward')
+          
+          this.step_size += 0.2
+          this.step_size = min(this.step_size, this.speed_limit)
         });
 
         this.key_triggered_button( "reverse",  [ "y" ], () => { 
           // toggle acceleration on
+          // (1) Move current step_size to 0 over a period of time
+          // (2) Move current step size to negative value
+          // (3) make sure < speed_limit
           this.state.accel = false
           this.state.decel = true
 
           let transformation_mtx = Mat4.identity()
           // move backward
-          this.transform_box_grid(transformation_mtx, 'move_backward')
+          // push step size down to zero
+
+          if ((this.step_size) > 0) {
+            // push current step size to 0 to slow down
+            this.step_size -= 0.2
+            this.transform_box_grid(transformation_mtx, 'move_forward')
+          }
+          else if (this.step_size <= 0) {
+            this.step_size = 0
+            this.transform_box_grid(transformation_mtx, 'move_backward')
+            this.back_step_size += 0.1
+            this.back_step_size = min(this.back_step_size, -2)
+          }
         });
 
         this.key_triggered_button( "break",  [ "k" ], () => { 
           // toggle acceleration on
-          this.state.accel = false
-          this.state.decel = false
+        
+
+          if (Math.abs(this.step_size) > 0) {
+            
+            let transformation_mtx = Mat4.identity()
+
+            if (this.state.accel) {
+              this.step_size -= 0.5
+              // move forward while decreasing
+              // include guard so you dont go the other way
+              this.back_step_size = max(0, this.step_size)
+              this.transform_box_grid(transformation_mtx, 'move_forward')
+            } else if (this.state.decel) {
+              this.back_step_size -= 0.5
+              this.back_step_size = max(0, this.back_step_size)
+              // move backward while decreasing
+              this.transform_box_grid(transformation_mtx, 'move_backward')
+            } else if (this.step_size == 0) {
+              this.state.accel = false
+            } else if (this.back_step_size == 0) {
+              this.state.decel = false
+            }
+
+          }
 
           // TODO decrease current speed to 0
           let transformation_mtx = Mat4.identity()
           // move backward
+          // Move the step_size to 0 and reset it
+          // reset step size to 0
+          // reset step size by moving it to 0 slowly
           this.transform_box_grid(transformation_mtx, 'move_backward')
         });
 
@@ -141,7 +186,7 @@ class Assignment_Three_Scene extends Scene_Component
             this.transform_box_grid(transformation_mtx, 'move_forward')
             this.transform_box_grid(transformation_mtx, 'rotate_right')  
           } else if (this.state.decel) {
-            this.transform_box_grid(transformation_mtx, 'move_backward')
+            this.transform_box_grid(transformation_mtx, 'move_backward') // TODO Fix for step size
             this.transform_box_grid(transformation_mtx, 'rotate_left')
           } else {
             // TODO Add logic so that if the speed is zero it won't actively turn
@@ -221,7 +266,7 @@ class Assignment_Three_Scene extends Scene_Component
       } else if (kind == 'move_forward') {
         return box.times(Mat4.translation([-this.step_size, 0, 0]))
       } else if (kind == 'move_backward') {
-        return box.times(Mat4.translation([this.step_size, 0, 0]))
+        return box.times(Mat4.translation([+this.back_step_size, 0, 0]))
       } else {
         // do nothing
         return box
