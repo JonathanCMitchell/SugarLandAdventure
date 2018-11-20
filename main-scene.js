@@ -18,6 +18,8 @@ class Assignment_Three_Scene extends Scene_Component
                          world:    new Subdivision_Sphere(8),
                          axis:  new Axis_Arrows()
                        }
+
+        
         //  Initialize model transform matrix of all cubes
         let column_list = []
         for (var i = 0; i < 20; i+=2)
@@ -31,13 +33,12 @@ class Assignment_Three_Scene extends Scene_Component
               row_list.push(model_transform)
             }
             column_list.push(row_list)
-            
 
         }
 //      // 
         this.box_grid = column_list
         
-        this.step_size = 1.
+        this.step_size = .5
         this.rotation_angle = Math.PI/30
 
 
@@ -61,18 +62,71 @@ class Assignment_Three_Scene extends Scene_Component
          this.in_turn_left = false
          this.in_turn_right = false
 
+         
+         this.state = {
+           'accel': false,
+           'decel': false
+         }
+
          // TODO:  Create any variables that needs to be remembered from frame to frame, such as for incremental movements over time.
        }
+    // TODO: Add a method to keep track of the current speed and update step_size based on current speed
+    // Enable deceleration and acceleration and breaking.
+    // Breaking: toggle current speed to 0
+    // Acceleration: Increase current speed up to a limit
+    // Deceleration: Decrease current speed to 0 then reverse. Must change flags here
+
+    // TODO: Enable rotation angle change based on time of pressed rotation key (possible?)
     make_control_panel()
       { 
         this.key_triggered_button( "View world",  [ "0" ], () => this.attached = () => this.initial_camera_location );
-        this.key_triggered_button( "turn left",  [ "q" ], () => { 
-          // transform with the current dt value
-          // this.pause_rotation_left = !this.pause_rotation_left
-          // this.in_turn_right = false
-          // this.in_turn_left = true
+        this.key_triggered_button( "accelerate",  [ "t" ], () => { 
+          // toggle acceleration on
+          this.state.accel = true
+          this.state.decel = false
+
           let transformation_mtx = Mat4.identity()
-          this.transform_box_grid(transformation_mtx, 'rotate_left')
+          // default is move forward
+          this.transform_box_grid(transformation_mtx, 'move_forward')
+        });
+
+        this.key_triggered_button( "reverse",  [ "y" ], () => { 
+          // toggle acceleration on
+          this.state.accel = false
+          this.state.decel = true
+
+          let transformation_mtx = Mat4.identity()
+          // move backward
+          this.transform_box_grid(transformation_mtx, 'move_backward')
+        });
+
+        this.key_triggered_button( "break",  [ "k" ], () => { 
+          // toggle acceleration on
+          this.state.accel = false
+          this.state.decel = false
+
+          // TODO decrease current speed to 0
+          let transformation_mtx = Mat4.identity()
+          // move backward
+          this.transform_box_grid(transformation_mtx, 'move_backward')
+        });
+
+
+        this.key_triggered_button( "turn left",  [ "q" ], () => { 
+          let transformation_mtx = Mat4.identity()
+          if (this.state.accel) {
+            this.transform_box_grid(transformation_mtx, 'move_forward')
+            this.transform_box_grid(transformation_mtx, 'rotate_left')  
+          } else if (this.state.decel) {
+            this.transform_box_grid(transformation_mtx, 'move_backward')
+            this.transform_box_grid(transformation_mtx, 'rotate_right')
+          } else {
+            // TODO Add logic so that if the speed is zero it won't actively turn
+            // move right with no turn
+            this.transform_box_grid(transformation_mtx, 'rotate_left')  
+          }
+
+          
         });
         this.key_triggered_button( "turn right",  [ "e" ], () => { 
         // Whatever you want to rotate around, make its X, Y, Z coordinates here
@@ -82,7 +136,18 @@ class Assignment_Three_Scene extends Scene_Component
           // this.transform_box_grid_item(transformation_mtx, 2, 2)
           // this.transform_box_grid_item(transformation_mtx, 2, 3)
           
-          this.transform_box_grid(transformation_mtx, 'rotate_right')
+          // can use custom step size if you want
+          if (this.state.accel) {
+            this.transform_box_grid(transformation_mtx, 'move_forward')
+            this.transform_box_grid(transformation_mtx, 'rotate_right')  
+          } else if (this.state.decel) {
+            this.transform_box_grid(transformation_mtx, 'move_backward')
+            this.transform_box_grid(transformation_mtx, 'rotate_left')
+          } else {
+            // TODO Add logic so that if the speed is zero it won't actively turn
+            // move right with no turn
+            this.transform_box_grid(transformation_mtx, 'rotate_right')  
+          }
         });
         this.key_triggered_button( "Attach to world", [ "1" ], () => this.attached = () => this.attach_world );
         
@@ -91,6 +156,7 @@ class Assignment_Three_Scene extends Scene_Component
           // transformation_mtx = this.get_translate_forward(transformation_mtx, this.step_size)
           // pass in the current transformation matrix
           this.transform_box_grid(transformation_mtx, 'move_forward')
+          
         });
 
         this.key_triggered_button( "move backward",  [ "v" ], () => { 
@@ -110,23 +176,21 @@ class Assignment_Three_Scene extends Scene_Component
         }
     }
 
+    // ======= HELPER FUNCTION ==============
     render_box_grid_item(graphics_state, row, col) {
     // render first item in the box grid
     this.shapes.axis.draw(graphics_state, this.box_grid[row][col], this.materials.phong)
     }
 
+    // ======== HELPER FUNCTION =================
     transform_box_grid_item(transformation_mtx, row=0, col=0) {
         // save x,z
       const x = this.box_grid[row][col][0][3]
       const z = this.box_grid[row][col][2][3]
 
-
-
-
       // Apply rotation around origin (using identity) will be replaced with camera x and camera z eventually  
       // apply rotation
       let rotation_mtx = transformation_mtx.times(Mat4.rotation(Math.PI/30, [0, 1, 0]))
-      
 
       // translate out x,z _ cam_x cam_z
       rotation_mtx = rotation_mtx.times(Mat4.translation([x, 0, z]))
@@ -152,28 +216,24 @@ class Assignment_Three_Scene extends Scene_Component
  
         let M = transformation_mtx.times(Mat4.rotation(this.rotation_angle, [0, 1, 0])) // then move up here
         M = M.times(Mat4.translation([x, 0, z]))
+        // TODO: Try to translate with x + dt
         return M 
       } else if (kind == 'move_forward') {
-        return box.times(Mat4.translation([this.step_size, 0, 0]))
-      } else if (kind == 'move_backward') {
         return box.times(Mat4.translation([-this.step_size, 0, 0]))
+      } else if (kind == 'move_backward') {
+        return box.times(Mat4.translation([this.step_size, 0, 0]))
       } else {
         // do nothing
         return box
       }
-       
-
        }));   
-      
-      
     }
+    
 
     get_translate_forward(transformation_mtx, step_size) {
       transformation_mtx= transformation_mtx.times(Mat4.translation([step_size, 0, 0]))
       return transformation_mtx
-
     }
-
 
     get_translate_backward(transformation_mtx, step_size) {
       transformation_mtx= transformation_mtx.times(Mat4.translation([-step_size, 0, 0]))
@@ -184,14 +244,13 @@ class Assignment_Three_Scene extends Scene_Component
     get_rotate_right(transformation_mtx) {
       transformation_mtx= Mat4.identity().times(Mat4.rotation(Math.PI/30, [0, 1, 0]))
       return transformation_mtx
-
     }
 
 
     display( graphics_state )
       { graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
         const t = graphics_state.animation_time / 1000
-        this.dt = graphics_state.animation_delta_time / 1000;
+        this.dt = graphics_state.animation_delta_time / 1000
         const dt = graphics_state.animation_delta_time / 1000;
 
         // if (!this.pause_rotation_left) {
@@ -251,7 +310,7 @@ class Assignment_Three_Scene extends Scene_Component
         camera_mat = camera_mat.times(Mat4.translation([1, 2., 0]))
         this.camera_mat = camera_mat
         this.attach_world = camera_mat
-        this.shapes.axis.draw(graphics_state, camera_mat, this.materials.phong1)
+//         this.shapes.axis.draw(graphics_state, camera_mat, this.materials.phong1)
 
 //         let camera_mat = Mat4.identity();
 //         camera_mat = camera_mat.times(Mat4.translation([0, 0, 30.1]));
