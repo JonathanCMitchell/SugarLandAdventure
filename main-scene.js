@@ -1,3 +1,4 @@
+
 window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
 class Assignment_Three_Scene extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
@@ -49,15 +50,68 @@ class Assignment_Three_Scene extends Scene_Component
             phong1: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6})
           }
          this.lights = [ new Light( Vec.of( -5,5,5,1 ), Color.of( 0,1,1,1 ), 100000 ) ];
-         this.pause_rotation = false
-         this.rotation_angle = 0
+         
+         this.pause_rotation_left = false
+         this.rotation_angle_left = 0
+
+         this.pause_rotation_right = false
+         this.rotation_angle_right = 0
+
+         this.in_turn_left = false
+         this.in_turn_right = false
+
          // TODO:  Create any variables that needs to be remembered from frame to frame, such as for incremental movements over time.
        }
     make_control_panel()
       { 
         this.key_triggered_button( "View world",  [ "0" ], () => this.attached = () => this.initial_camera_location );
-        this.key_triggered_button( "start/stop rotation",  [ "c" ], () => { this.pause_rotation = !this.pause_rotation});
+        this.key_triggered_button( "turn left",  [ "q" ], () => { 
+          // transform with the current dt value
+          this.pause_rotation_left = !this.pause_rotation_left
+          this.in_turn_right = false
+          this.in_turn_left = true
+        });
+        this.key_triggered_button( "turn right",  [ "e" ], () => { 
+          let transformation_mtx = this.camera_mat
+          transformation_mtx = transformation_mtx.times(Mat4.translation([0, -2, 0]))
+          transformation_mtx = this.get_rotate_right(transformation_mtx)
+
+
+          // pass in the current transformation matrix
+          this.transform_box_grid(transformation_mtx)
+
+          // this.pause_rotation_right = !this.pause_rotation_right
+          // this.in_turn_left = false
+          // this.in_turn_right = true
+
+        });
         this.key_triggered_button( "Attach to world", [ "1" ], () => this.attached = () => this.attach_world );
+        
+        this.key_triggered_button( "move forward",  [ "c" ], () => { 
+
+          let transformation_mtx = Mat4.identity()
+          transformation_mtx = this.get_translate_forward(transformation_mtx)
+          // pass in the current transformation matrix
+          this.transform_box_grid(transformation_mtx)
+
+          
+          // set everything else to false
+          this.in_turn_left = false
+          this.in_turn_right = false
+        });
+
+        this.key_triggered_button( "move backward",  [ "v" ], () => { 
+
+          let transformation_mtx = Mat4.identity()
+          transformation_mtx = this.get_translate_backward(transformation_mtx)
+          // pass in the current transformation matrix
+          this.transform_box_grid(transformation_mtx)
+
+          
+          // set everything else to false
+          this.in_turn_left = false
+          this.in_turn_right = false
+        });
         
       }
     render_box_grid(graphics_state) {
@@ -71,25 +125,62 @@ class Assignment_Three_Scene extends Scene_Component
     }
 
     transform_box_grid(transformation_mtx) {
-        this.box_grid = this.box_grid.map( row_list => row_list.map( (box) => box.times(transformation_mtx)));
+      console.log('button pressed inside transform_box_grid function')
+      this.box_grid = this.box_grid.map( row_list => row_list.map( (box) => box.times(transformation_mtx)));
+      
+    }
+
+    get_translate_forward(transformation_mtx) {
+      transformation_mtx= transformation_mtx.times(Mat4.translation([2., 0, 0]))
+      return transformation_mtx
+
+    }
+
+
+    get_translate_backward(transformation_mtx) {
+      transformation_mtx= transformation_mtx.times(Mat4.translation([-2., 0, 0]))
+      return transformation_mtx
+
+    }
+
+    get_rotate_right(transformation_mtx) {
+      transformation_mtx= transformation_mtx.times(Mat4.rotation(.1, [0, -1, 0]))
+      return transformation_mtx
+
     }
 
 
     display( graphics_state )
       { graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
         const t = graphics_state.animation_time / 1000
+        this.dt = graphics_state.animation_delta_time / 1000;
         const dt = graphics_state.animation_delta_time / 1000;
 
-        if (!this.pause_rotation) {
-          this.rotation_angle += dt
-        }
+        // if (!this.pause_rotation_left) {
+        //   this.rotation_angle_left += dt
+        // }
 
-        if (this.pause_rotation) {
-            this.rotation_angle = 0
-        }
+        // if (this.pause_rotation_left) {
+        //     this.rotation_angle_left = 0
+        // }
+
+
+        // if (!this.pause_rotation_right) {
+        //   this.rotation_angle_right += dt
+        // }
+
+        // if (this.pause_rotation_right) {
+        //     this.rotation_angle_right = 0
+        // }
+
+
         
+        
+
          // TODO:  Draw the required boxes. Also update their stored matrices.
-        this.shapes.axis.draw( graphics_state, Mat4.identity().times(Mat4.translation([2,0,0])), this.materials.phong1.override({color: Color.of(0,1,1,1.)}) );
+         let axis_transform = Mat4.identity().times(Mat4.translation([2,0,0])).times(Mat4.scale([1/5,1/5,1/5]))
+
+        this.shapes.axis.draw( graphics_state, axis_transform, this.materials.phong1.override({color: Color.of(0,1,1,1.)}) );
 
 //         var world_model_transform = Mat4.identity()
 //         world_model_transform   = world_model_transform.times( Mat4.rotation( t/15, Vec.of( 1, 0, 0) ) );
@@ -111,19 +202,15 @@ class Assignment_Three_Scene extends Scene_Component
         // (2) Render box grid
         
 
-        let transform_sample = Mat4.identity()
-        transform_sample = transform_sample.times(Mat4.rotation(this.rotation_angle/50, [0,1,0]))
-
-
         
-        this.transform_box_grid(transform_sample)
+        // this.transform_box_grid(transform_sample)
         this.render_box_grid(graphics_state)
 
-        
-           
+        console.log('render box grid')
         let camera_mat = Mat4.identity();
         camera_mat = camera_mat.times(Mat4.rotation(Math.PI/2, [0, -1.0, 0]))
         camera_mat = camera_mat.times(Mat4.translation([1, 2., 0]))
+        this.camera_mat = camera_mat
         this.attach_world = camera_mat
         this.shapes.axis.draw(graphics_state, camera_mat, this.materials.phong1)
 
