@@ -22,10 +22,10 @@ class Assignment_Three_Scene extends Scene_Component
         
         //  Initialize model transform matrix of all cubes
         let column_list = []
-        for (var i = 0; i < 30; i+=2)
+        for (var i = 0; i < 20; i+=2)
         {
             let row_list = []
-            for (var j = 0; j < 30; j+=2)
+            for (var j = 0; j < 20; j+=2)
             {
                 // push to rowlist    
               let model_transform = Mat4.identity()
@@ -39,9 +39,12 @@ class Assignment_Three_Scene extends Scene_Component
         this.box_grid = column_list
         
         this.step_size = 0
-        this.step_size_incrementer = 0.002
-        this.step_size_decrementer = 0.00025
-        this.step_size_reverse_decrementer = 0.05
+        this.step_size_incrementer = 0.0001
+        this.step_size_decrementer = 0.00001
+        this.speed_limit = 0.0100
+        this.rotation_amount = 50
+
+
         this.back_step_size = 0
         this.rotation_angle = Math.PI/30
 
@@ -66,12 +69,12 @@ class Assignment_Three_Scene extends Scene_Component
 
          this.in_turn_left = false
          this.in_turn_right = false
+          
 
 
 
          this.button_holding = false
 
-         this.speed_limit = 1
          
          
          this.state = {
@@ -87,54 +90,18 @@ class Assignment_Three_Scene extends Scene_Component
           // toggle acceleration on
           this.state.accel = true
           this.state.decel = false
-          console.log('inside accelerate step size is negative: ', this.step_size)
 
-          let transformation_mtx = Mat4.identity()
-          // default is move forward
-          this.transform_box_grid(transformation_mtx, 'move_forward')
-          
-          this.step_size += this.step_size_incrementer
-          this.step_size = Math.min(this.step_size, this.speed_limit)
-
-          // this.state.accel = false
         }, '#'+Math.random().toString(9).slice(-6), () => {
           this.state.accel = false
         });
 
         this.key_triggered_button( "reverse",  [ "y" ], () => { 
-          // toggle acceleration on
-          // (1) Move current step_size to 0 over a period of time
-          // (2) Move current step size to negative value
-          // (3) make sure < speed_limit
           this.state.accel = false
           this.state.decel = true
 
-          let transformation_mtx = Mat4.identity()
-          // move backward
-          // push step size down to zero
-          
-
-          if ((this.step_size) > 0) {
-            // push current step size to 0 to slow down
-            this.step_size -= this.step_size_reverse_decrementer
-
-            
-
-            this.transform_box_grid(transformation_mtx, 'move_forward')
-          }
-          else if (this.step_size <= 0) {
-            this.step_size = 0
-            this.transform_box_grid(transformation_mtx, 'move_backward')
-            // this.back_step_size += this.step_size_incrementer
-            // this.back_step_size = Math.min(this.back_step_size, this.speed_limit)
-
-            this.back_step_size = Math.min(this.back_step_size + this.step_size_incrementer, this.speed_limit)
-          }
-          
         }, '#'+Math.random().toString(9).slice(-6), () => {
           this.state.decel = false
         });
-        
 
         this.key_triggered_button( "break",  [ "k" ], () => { 
           // toggle acceleration on
@@ -197,7 +164,7 @@ class Assignment_Three_Scene extends Scene_Component
           // this.transform_box_grid_item(transformation_mtx, 2, 2)
           // this.transform_box_grid_item(transformation_mtx, 2, 3)
           // can use custom step size if you want
-          let rot_step = 5 * this.step_size
+          let rot_step = this.rotation_amount * this.step_size
           if (this.step_size > 0) {
             // this.transform_box_grid(transformation_mtx, 'move_forward')
             this.transform_box_grid(transformation_mtx, 'rotate_right', rot_step)  
@@ -207,7 +174,7 @@ class Assignment_Three_Scene extends Scene_Component
           } else {
             // TODO Add logic so that if the speed is zero it won't actively turn
             // move right with no turn
-            this.transform_box_grid(transformation_mtx, 'rotate_right',0)  
+            // this.transform_box_grid(transformation_mtx, 'rotate_right',0)  
           }
         });
         this.key_triggered_button( "Attach to world", [ "1" ], () => this.attached = () => this.attach_world );
@@ -228,9 +195,9 @@ class Assignment_Three_Scene extends Scene_Component
         
       }
     render_box_grid(graphics_state) {
-        for (var i = 0; i < 15; i++)
+        for (var i = 0; i < 10; i++)
         {
-            for(var j = 0; j < 15; j++)
+            for(var j = 0; j < 10; j++)
             {
                 this.shapes.box.draw(graphics_state, this.box_grid[i][j], this.materials.phong)
 //                 this.shapes.axis.draw(graphics_state, Mat4.identity().times(Mat4.rotation(Math.PI/3, [0,1,0])).times(this.box_grid[i][j]), this.materials.phong)
@@ -270,9 +237,10 @@ class Assignment_Three_Scene extends Scene_Component
         return Mat4.translation([-rotation_step, 0, 0]).times(Mat4.rotation(this.rotation_angle,[0, 1, 0]).times(box))
         // return Mat4.rotation(this.rotation_angle,[0, 1, 0]).times(box)
       } else if (kind == 'move_forward') {
-        return box.times(Mat4.translation([-this.step_size, 0, 0]))
+        return Mat4.translation([-this.step_size, 0, 0]).times(box)
       } else if (kind == 'move_backward') {
-        return box.times(Mat4.translation([+this.back_step_size, 0, 0]))
+        return Mat4.translation([+this.back_step_size, 0, 0]).times(box)
+        // return box.times(Mat4.translation([+this.back_step_size, 0, 0]))
       } else {
         // do nothing
         return box
@@ -304,36 +272,56 @@ class Assignment_Three_Scene extends Scene_Component
         this.dt = graphics_state.animation_delta_time / 1000
         const dt = graphics_state.animation_delta_time / 1000;
 
-        console.log('this.state.accel: ', this.state.accel)
 
-        if (!this.state.accel && this.step_size > 0 && !this.state.decel) {
+        // Accelerate/decelerate in forward direction
+        if (this.state.accel)
+        {
+          // console.log("Accelerate forward")
           let transformation_mtx = Mat4.identity()
-          // default is move forward
-          console.log("i am decrementing!!")
-          this.transform_box_grid(transformation_mtx, 'move_forward')
-          this.step_size = Math.max(this.step_size-this.step_size_decrementer, 0)
-        }
+          this.step_size += this.step_size_incrementer
+          this.step_size = Math.min(this.step_size, this.speed_limit)
 
-        if (!this.state.decel && this.back_step_size > 0 && !this.state.accel) {
+          this.transform_box_grid(transformation_mtx, 'move_forward')
+
+        }
+        else if (!this.state.accel && this.step_size > 0 && !this.state.decel) {
+          // console.log("Decelerate forward")
+          let transformation_mtx = Mat4.identity()
+          this.step_size = Math.max(this.step_size-this.step_size_decrementer, 0)
+          this.transform_box_grid(transformation_mtx, 'move_forward')
+        }
+        
+        // Accelerate/decelerate in backward direction
+        if (this.state.decel) {
+
+          // console.log("Accelerate backward")
+          let transformation_mtx = Mat4.identity()
+
+          if ((this.step_size) > 0) {
+            // push current step size to 0 to slow down
+            //  Decrement at a faster rate 
+            this.step_size -= 0.0015
+
+            this.transform_box_grid(transformation_mtx, 'move_forward')
+          }
+          else if (this.step_size <= 0) {
+            this.step_size = 0
+            this.transform_box_grid(transformation_mtx, 'move_backward')
+            this.back_step_size += this.step_size_incrementer
+            this.back_step_size = Math.min(this.back_step_size, this.speed_limit)
+          }
+          
+        }
+        else if (!this.state.decel && this.back_step_size > 0 && !this.state.accel)
+        {
+          // console.log("Decelerate backward")
           let transformation_mtx = Mat4.identity()
           // default is move forward
           this.transform_box_grid(transformation_mtx, 'move_backward')
           this.back_step_size = Math.max(this.back_step_size-this.step_size_decrementer, 0)
+
         }
-
-        // this.state.decel = false
-        // this.state.accel = false
-
-        // console.log('in display step size \n: ', this.step_size)
-
-
-        // check state
-
-        // call accel
-
-        // toggle button holding flag
-        // this.button_holding = false
-
+        //console.log(this.step_size, this.back_step_size)
 
 
         this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
