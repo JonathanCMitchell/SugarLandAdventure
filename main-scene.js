@@ -5,7 +5,7 @@ class Assignment_Three_Scene extends Scene_Component
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
         if( !context.globals.has_controls   ) 
           context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) ); 
-         context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,0,90 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
+         context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,30,25 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
          this.initial_camera_location = Mat4.inverse( context.globals.graphics_state.camera_transform );
 
          const r = context.width/context.height;
@@ -38,8 +38,11 @@ class Assignment_Three_Scene extends Scene_Component
 //      // 
         this.box_grid = column_list
         
-        this.step_size = .01
-        this.back_step_size = 0.005
+        this.step_size = 0
+        this.step_size_incrementer = 0.002
+        this.step_size_decrementer = 0.00025
+        this.step_size_reverse_decrementer = 0.05
+        this.back_step_size = 0
         this.rotation_angle = Math.PI/30
 
 
@@ -64,22 +67,19 @@ class Assignment_Three_Scene extends Scene_Component
          this.in_turn_left = false
          this.in_turn_right = false
 
+
+
+         this.button_holding = false
+
          this.speed_limit = 1
+         
          
          this.state = {
            'accel': false,
            'decel': false
          }
-
-         // TODO:  Create any variables that needs to be remembered from frame to frame, such as for incremental movements over time.
        }
-    // TODO: Add a method to keep track of the current speed and update step_size based on current speed
-    // Enable deceleration and acceleration and breaking.
-    // Breaking: toggle current speed to 0
-    // Acceleration: Increase current speed up to a limit
-    // Deceleration: Decrease current speed to 0 then reverse. Must change flags here
-
-    // TODO: Enable rotation angle change based on time of pressed rotation key (possible?)
+      
     make_control_panel()
       { 
         this.key_triggered_button( "View world",  [ "0" ], () => this.attached = () => this.initial_camera_location );
@@ -87,13 +87,18 @@ class Assignment_Three_Scene extends Scene_Component
           // toggle acceleration on
           this.state.accel = true
           this.state.decel = false
+          console.log('inside accelerate step size is negative: ', this.step_size)
 
           let transformation_mtx = Mat4.identity()
           // default is move forward
           this.transform_box_grid(transformation_mtx, 'move_forward')
           
-          this.step_size += 0.02
-          this.step_size = min(this.step_size, this.speed_limit)
+          this.step_size += this.step_size_incrementer
+          this.step_size = Math.min(this.step_size, this.speed_limit)
+
+          // this.state.accel = false
+        }, '#'+Math.random().toString(9).slice(-6), () => {
+          this.state.accel = false
         });
 
         this.key_triggered_button( "reverse",  [ "y" ], () => { 
@@ -107,20 +112,29 @@ class Assignment_Three_Scene extends Scene_Component
           let transformation_mtx = Mat4.identity()
           // move backward
           // push step size down to zero
+          
 
           if ((this.step_size) > 0) {
             // push current step size to 0 to slow down
-            this.step_size -= 0.15
+            this.step_size -= this.step_size_reverse_decrementer
+
+            
 
             this.transform_box_grid(transformation_mtx, 'move_forward')
           }
           else if (this.step_size <= 0) {
             this.step_size = 0
             this.transform_box_grid(transformation_mtx, 'move_backward')
-            this.back_step_size += 0.01
-            this.back_step_size = min(this.back_step_size, -2)
+            // this.back_step_size += this.step_size_incrementer
+            // this.back_step_size = Math.min(this.back_step_size, this.speed_limit)
+
+            this.back_step_size = Math.min(this.back_step_size + this.step_size_incrementer, this.speed_limit)
           }
+          
+        }, '#'+Math.random().toString(9).slice(-6), () => {
+          this.state.decel = false
         });
+        
 
         this.key_triggered_button( "break",  [ "k" ], () => { 
           // toggle acceleration on
@@ -134,16 +148,16 @@ class Assignment_Three_Scene extends Scene_Component
               this.step_size -= 0.05
               // move forward while decreasing
               // include guard so you dont go the other way
-              this.back_step_size = max(0, this.step_size)
+              this.back_step_size = Math.max(0, this.step_size)
               this.transform_box_grid(transformation_mtx, 'move_forward')
             } else if (this.state.decel) {
               this.back_step_size -= 0.05
-              this.back_step_size = max(0, this.back_step_size)
+              this.back_step_size = Math.max(0, this.back_step_size)
               // move backward while decreasing
               this.transform_box_grid(transformation_mtx, 'move_backward')
-            } else if (this.step_size == 0) {
+            } else if (this.step_size <= 0) {
               this.state.accel = false
-            } else if (this.back_step_size == 0) {
+            } else if (this.back_step_size <= 0) {
               this.state.decel = false
             }
 
@@ -182,18 +196,18 @@ class Assignment_Three_Scene extends Scene_Component
           // transform one item
           // this.transform_box_grid_item(transformation_mtx, 2, 2)
           // this.transform_box_grid_item(transformation_mtx, 2, 3)
-          
           // can use custom step size if you want
-          if (this.state.accel) {
-            this.transform_box_grid(transformation_mtx, 'move_forward')
-            this.transform_box_grid(transformation_mtx, 'rotate_right')  
-          } else if (this.state.decel) {
+          let rot_step = 5 * this.step_size
+          if (this.step_size > 0) {
+            // this.transform_box_grid(transformation_mtx, 'move_forward')
+            this.transform_box_grid(transformation_mtx, 'rotate_right', rot_step)  
+          } else if (this.back_step_size > 0 && this.step_size <= 0) {
             this.transform_box_grid(transformation_mtx, 'move_backward') // TODO Fix for step size
             this.transform_box_grid(transformation_mtx, 'rotate_left')
           } else {
             // TODO Add logic so that if the speed is zero it won't actively turn
             // move right with no turn
-            this.transform_box_grid(transformation_mtx, 'rotate_right')  
+            this.transform_box_grid(transformation_mtx, 'rotate_right',0)  
           }
         });
         this.key_triggered_button( "Attach to world", [ "1" ], () => this.attached = () => this.attach_world );
@@ -219,6 +233,7 @@ class Assignment_Three_Scene extends Scene_Component
             for(var j = 0; j < 15; j++)
             {
                 this.shapes.box.draw(graphics_state, this.box_grid[i][j], this.materials.phong)
+//                 this.shapes.axis.draw(graphics_state, Mat4.identity().times(Mat4.rotation(Math.PI/3, [0,1,0])).times(this.box_grid[i][j]), this.materials.phong)
             }
         }
     }
@@ -245,26 +260,15 @@ class Assignment_Three_Scene extends Scene_Component
       this.box_grid[row][col] = rotation_mtx
     }
 
-    transform_box_grid(transformation_mtx, kind='') {
+    transform_box_grid(transformation_mtx, kind='', rotation_step=0) {
 
       this.box_grid = this.box_grid.map( row_list => row_list.map( (box) => {
       
       if (kind == 'rotate_left') {
-       const x = box[0][3]
-       const z = box[2][3]
-
-       let M = transformation_mtx.times(Mat4.rotation(this.rotation_angle, [0, -1, 0]))
-       M = M.times(Mat4.translation([x, 0, z]))
-       return M
-
+       return Mat4.rotation(this.rotation_angle,[0, -1, 0]).times(box)
       } else if (kind == 'rotate_right') {
-        const x = box[0][3]
-        const z = box[2][3]
- 
-        let M = transformation_mtx.times(Mat4.rotation(this.rotation_angle, [0, 1, 0])) // then move up here
-        M = M.times(Mat4.translation([x, 0, z]))
-        // TODO: Try to translate with x + dt
-        return M 
+        return Mat4.translation([-rotation_step, 0, 0]).times(Mat4.rotation(this.rotation_angle,[0, 1, 0]).times(box))
+        // return Mat4.rotation(this.rotation_angle,[0, 1, 0]).times(box)
       } else if (kind == 'move_forward') {
         return box.times(Mat4.translation([-this.step_size, 0, 0]))
       } else if (kind == 'move_backward') {
@@ -300,22 +304,37 @@ class Assignment_Three_Scene extends Scene_Component
         this.dt = graphics_state.animation_delta_time / 1000
         const dt = graphics_state.animation_delta_time / 1000;
 
-        // if (!this.pause_rotation_left) {
-        //   this.rotation_angle_left += dt
-        // }
+        console.log('this.state.accel: ', this.state.accel)
 
-        // if (this.pause_rotation_left) {
-        //     this.rotation_angle_left = 0
-        // }
+        if (!this.state.accel && this.step_size > 0 && !this.state.decel) {
+          let transformation_mtx = Mat4.identity()
+          // default is move forward
+          console.log("i am decrementing!!")
+          this.transform_box_grid(transformation_mtx, 'move_forward')
+          this.step_size = Math.max(this.step_size-this.step_size_decrementer, 0)
+        }
+
+        if (!this.state.decel && this.back_step_size > 0 && !this.state.accel) {
+          let transformation_mtx = Mat4.identity()
+          // default is move forward
+          this.transform_box_grid(transformation_mtx, 'move_backward')
+          this.back_step_size = Math.max(this.back_step_size-this.step_size_decrementer, 0)
+        }
+
+        // this.state.decel = false
+        // this.state.accel = false
+
+        // console.log('in display step size \n: ', this.step_size)
 
 
-        // if (!this.pause_rotation_right) {
-        //   this.rotation_angle_right += dt
-        // }
+        // check state
 
-        // if (this.pause_rotation_right) {
-        //     this.rotation_angle_right = 0
-        // }
+        // call accel
+
+        // toggle button holding flag
+        // this.button_holding = false
+
+
 
         this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
         
@@ -357,7 +376,7 @@ class Assignment_Three_Scene extends Scene_Component
         camera_mat = camera_mat.times(Mat4.translation([1, 2., 0]))
         this.camera_mat = camera_mat
         this.attach_world = camera_mat
-        this.shapes.box.draw(graphics_state, camera_mat.times(Mat4.translation([0, 0, 1])), this.materials.phong3)
+        this.shapes.box.draw(graphics_state, camera_mat.times(Mat4.scale([1/10,1/10,1/10])).times(Mat4.translation([0, 0, 1])), this.materials.phong3)
 
 //         let camera_mat = Mat4.identity();
 //         camera_mat = camera_mat.times(Mat4.translation([0, 0, 30.1]));
