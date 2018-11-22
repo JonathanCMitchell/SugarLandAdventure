@@ -42,9 +42,9 @@ class road_scene extends Scene_Component
         this.step_size_incrementer = 0.0001
         this.step_size_decrementer = 0.0001
         this.speed_limit = 0.0100
-        this.rotation_amount = 50
+        this.rotation_amount = 1
         this.back_step_size = 0
-        this.rotation_angle = Math.PI/30
+        this.rotation_angle = Math.PI/60
         this.pause_rotation_left = false
         this.rotation_angle_left = 0
         this.pause_rotation_right = false
@@ -64,7 +64,8 @@ class road_scene extends Scene_Component
          
          this.state = {
            'accel': false,
-           'decel': false
+           'decel': false,
+           'ludicrous': false,
          }
 
       // =========== ATTACHES SHAPES =================
@@ -90,6 +91,15 @@ class road_scene extends Scene_Component
         }, '#'+Math.random().toString(9).slice(-6), () => {
           this.state.decel = false
         });
+
+        this.key_triggered_button( "ludicrous mode",  [ "m" ], () => { 
+          this.state.ludicrous = true
+          // TODO: Shoot nitrous or fire out the back
+        }, '#'+Math.random().toString(9).slice(-6), () => {
+          this.state.ludicrous = false
+        });
+
+
 
         // NOTE: Break not implemented yet
         this.key_triggered_button( "break",  [ "k" ], () => { 
@@ -226,6 +236,8 @@ class road_scene extends Scene_Component
       } else if (kind == 'move_backward') {
         return Mat4.translation([+this.back_step_size, 0, 0]).times(box)
         // return box.times(Mat4.translation([+this.back_step_size, 0, 0]))
+      } else if (kind == 'ludicrous_forward') {
+        return Mat4.translation([5 * -this.step_size, 0, 0]).times(box)
       } else {
         // do nothing
         return box
@@ -240,13 +252,19 @@ class road_scene extends Scene_Component
         const dt = graphics_state.animation_delta_time / 1000;
 
         // Accelerate/decelerate in forward direction
-        if (this.state.accel) {
+        if (this.state.accel && this.state.ludicrous) {
+          // console.log("Accelerate forward")
+          let transformation_mtx = Mat4.identity()
+          this.step_size += this.step_size_incrementer
+          this.step_size = Math.min(this.step_size, this.speed_limit)
+          this.transform_box_grid(transformation_mtx, 'ludicrous_forward')
+        }  else if (this.state.accel) {
           // console.log("Accelerate forward")
           let transformation_mtx = Mat4.identity()
           this.step_size += this.step_size_incrementer
           this.step_size = Math.min(this.step_size, this.speed_limit)
           this.transform_box_grid(transformation_mtx, 'move_forward')
-
+        
         }  else if (!this.state.accel && this.step_size > 0 && !this.state.decel) {
           // console.log("Decelerate forward")
           let transformation_mtx = Mat4.identity()
