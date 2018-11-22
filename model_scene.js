@@ -53,7 +53,7 @@ class model_scene extends Scene_Component {
 		this.model("swirl.jpg",0.75);
 		this.model("icebar.jpg",0.75);
 		this.model("cookie.jpg",0.75);
-		this.model("cone.jpg",0.75);
+		this.model("cone1.jpg",0.75);
         this.submit_shapes(context, this.shapes);
     }
     display(state){
