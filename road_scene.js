@@ -1,7 +1,8 @@
 
 window.road_scene = window.classes.road_scene =
 class road_scene extends Scene_Component
-  { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
+  {
+     constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
         if( !context.globals.has_controls   ) 
           context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) ); 
@@ -35,9 +36,8 @@ class road_scene extends Scene_Component
             column_list.push(row_list)
 
         }
-//      // 
         this.box_grid = column_list
-        
+
         this.step_size = 0
         this.step_size_incrementer = 0.0001
         this.step_size_decrementer = 0.0001
@@ -54,9 +54,6 @@ class road_scene extends Scene_Component
         this.button_holding = false
 
         this.submit_shapes( context, shapes );
-         // TODO:  Create the materials required to texture both cubes with the correct images and settings.
-        //        Make each Material from the correct shader.  Phong_Shader will work initially, but when 
-        //        you get to requirements 6 and 7 you will need different ones.
         this.materials =
           { 
             phong: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/gravel.jpg", true) } ),
@@ -69,6 +66,9 @@ class road_scene extends Scene_Component
            'accel': false,
            'decel': false
          }
+
+      // =========== ATTACHES SHAPES =================
+
        }
       
     make_control_panel()
@@ -187,7 +187,6 @@ class road_scene extends Scene_Component
             for(var j = 0; j < 10; j++)
             {
                 this.shapes.box.draw(graphics_state, this.box_grid[i][j], this.materials.phong)
-//                 this.shapes.axis.draw(graphics_state, Mat4.identity().times(Mat4.rotation(Math.PI/3, [0,1,0])).times(this.box_grid[i][j]), this.materials.phong)
             }
         }
     }
@@ -241,16 +240,14 @@ class road_scene extends Scene_Component
         const dt = graphics_state.animation_delta_time / 1000;
 
         // Accelerate/decelerate in forward direction
-        if (this.state.accel)
-        {
+        if (this.state.accel) {
           // console.log("Accelerate forward")
           let transformation_mtx = Mat4.identity()
           this.step_size += this.step_size_incrementer
           this.step_size = Math.min(this.step_size, this.speed_limit)
           this.transform_box_grid(transformation_mtx, 'move_forward')
 
-        }
-        else if (!this.state.accel && this.step_size > 0 && !this.state.decel) {
+        }  else if (!this.state.accel && this.step_size > 0 && !this.state.decel) {
           // console.log("Decelerate forward")
           let transformation_mtx = Mat4.identity()
           this.step_size = Math.max(this.step_size-this.step_size_decrementer, 0)
@@ -275,16 +272,12 @@ class road_scene extends Scene_Component
             this.back_step_size += this.step_size_incrementer
             this.back_step_size = Math.min(this.back_step_size, this.speed_limit)
           }
-          
-        }
-        else if (!this.state.decel && this.back_step_size > 0 && !this.state.accel)
-        {
+        }  else if (!this.state.decel && this.back_step_size > 0 && !this.state.accel) {
           // console.log("Decelerate backward")
           let transformation_mtx = Mat4.identity()
           // default is move forward
           this.transform_box_grid(transformation_mtx, 'move_backward')
           this.back_step_size = Math.max(this.back_step_size-this.step_size_decrementer, 0)
-
         }
         //console.log(this.step_size, this.back_step_size)
         this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
