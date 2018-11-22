@@ -47,9 +47,13 @@ class model_scene extends Scene_Component {
 		this.materials = {};
 		this.model("road.jpg");
 		this.model("sky.jpg");
-		this.model("icebar.jpg",0.75);
-		this.model("lollipop.png",1.2);
 		this.model("car.png",0.5);
+		this.model("lollipop.png",1.2);
+		this.model("twist.jpg",0.75);
+		this.model("swirl.jpg",0.75);
+		this.model("icebar.jpg",0.75);
+		this.model("cookie.jpg",0.75);
+		this.model("cone.jpg",0.75);
         this.submit_shapes(context, this.shapes);
     }
     display(state){
@@ -67,9 +71,13 @@ class model_scene extends Scene_Component {
 		this.tran = [
 			this.transform([0,0,0],[0,0,1,0],[3,0.2,3],[0,0,0],[0,0,-1,angle],[1,1,1]),
 			this.transform([0,-10,0],[0,1,0,angle],[10,10,10]),
-			this.transform([2,0,-1],[0,1,0,angle],[1,1,1]),
-			this.transform([0,-1,0],[0,0,-1,0],[1,0.2,1],[0,0,0],[0,0,-1,angle],[1,1,1],[2,5,+1],[0,0,-1,0],[1,5,1]),
 			this.transform([2.5,0.2,drive],[0,1,0,-Math.PI/2],[1,1,1]),
+			this.transform([0,-1,0],[0,0,-1,0],[1,0.2,1],[0,0,0],[0,0,-1,angle],[1,1,1],[2,5,+1],[0,0,-1,0],[1,5,1]),
+			this.transform([-1,0,3],[0,1,0,angle],[1,1,1]),
+			this.transform([-3,0,2],[0,1,0,angle],[1,1,1]),
+			this.transform([1,0,-2],[0,1,0,angle],[1,1,1]),
+			this.transform([-1,0,-3],[0,1,0,0],[1,1,1]),
+			this.transform([-3,0,-2],[0,1,0,0],[1,1,1]),
 		];
 		var i = 0;
 		for (var key in this.shapes) {
