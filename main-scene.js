@@ -40,7 +40,7 @@ class Assignment_Three_Scene extends Scene_Component
         
         this.step_size = 0
         this.step_size_incrementer = 0.0001
-        this.step_size_decrementer = 0.00001
+        this.step_size_decrementer = 0.0001
         this.speed_limit = 0.0100
         this.rotation_amount = 50
 
@@ -142,16 +142,18 @@ class Assignment_Three_Scene extends Scene_Component
 
         this.key_triggered_button( "turn left",  [ "q" ], () => { 
           let transformation_mtx = Mat4.identity()
-          if (this.state.accel) {
-            this.transform_box_grid(transformation_mtx, 'move_forward')
-            this.transform_box_grid(transformation_mtx, 'rotate_left')  
-          } else if (this.state.decel) {
-            this.transform_box_grid(transformation_mtx, 'move_backward')
+
+          let rot_step = this.rotation_amount * this.step_size
+          if (this.step_size > 0) {
+            // this.transform_box_grid(transformation_mtx, 'move_forward')
+            this.transform_box_grid(transformation_mtx, 'rotate_left', rot_step)  
+          } else if (this.back_step_size > 0 && this.step_size <= 0) {
+            this.transform_box_grid(transformation_mtx, 'move_backward') // TODO Fix for step size
             this.transform_box_grid(transformation_mtx, 'rotate_right')
           } else {
             // TODO Add logic so that if the speed is zero it won't actively turn
             // move right with no turn
-            this.transform_box_grid(transformation_mtx, 'rotate_left')  
+            // this.transform_box_grid(transformation_mtx, 'rotate_right',0)  
           }
 
           
@@ -232,10 +234,9 @@ class Assignment_Three_Scene extends Scene_Component
       this.box_grid = this.box_grid.map( row_list => row_list.map( (box) => {
       
       if (kind == 'rotate_left') {
-       return Mat4.rotation(this.rotation_angle,[0, -1, 0]).times(box)
+       return Mat4.translation([-rotation_step, 0, 0]).times(Mat4.rotation(this.rotation_angle,[0, -1, 0]).times(box))
       } else if (kind == 'rotate_right') {
         return Mat4.translation([-rotation_step, 0, 0]).times(Mat4.rotation(this.rotation_angle,[0, 1, 0]).times(box))
-        // return Mat4.rotation(this.rotation_angle,[0, 1, 0]).times(box)
       } else if (kind == 'move_forward') {
         return Mat4.translation([-this.step_size, 0, 0]).times(box)
       } else if (kind == 'move_backward') {
@@ -301,6 +302,8 @@ class Assignment_Three_Scene extends Scene_Component
             // push current step size to 0 to slow down
             //  Decrement at a faster rate 
             this.step_size -= 0.0015
+            // prevent step size from going negative in reverse step
+            this.step_size = Math.max(0, this.step_size)
 
             this.transform_box_grid(transformation_mtx, 'move_forward')
           }
