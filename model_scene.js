@@ -58,26 +58,30 @@ class model_scene extends Scene_Component {
     }
     display(state){
 		//return;
-		if (true) {
+		if (false) {
 			state.camera_transform 
 				= Mat4.look_at(Vec.of(5,1,1),Vec.of(0,1,0),Vec.of(0,1,0));
 			state.projection_transform
 				= Mat4.perspective(Math.PI/4, this.aspect, 1, 1000);
 		}
+		var gl = this.context.gl;
+		gl.enable(gl.CULL_FACE);
+		gl.frontFace(gl.CCW);
+		gl.cullFace(gl.BACK);
         var time = state.animation_time / 1000;
         var freq = 0.1;
         var angle = 2 * Math.PI * freq * time;
 		var drive = 0.25 * Math.sin(angle*3); 
 		this.tran = [
-			this.transform([0,0,0],[0,0,1,0],[3,0.2,3],[0,0,0],[0,0,-1,angle],[1,1,1]),
+			this.transform([6,1,0],[0,0,1,0],[3,0.2,3],[0,0,0],[0,0,1,angle],[1,1,1]),
 			this.transform([0,-10,0],[0,1,0,angle],[10,10,10]),
-			this.transform([2.5,0.2,drive],[0,1,0,-Math.PI/2],[1,1,1]),
-			this.transform([0,-1,0],[0,0,-1,0],[1,0.2,1],[0,0,0],[0,0,-1,angle],[1,1,1],[2,5,+1],[0,0,-1,0],[1,5,1]),
-			this.transform([-1,0,3],[0,1,0,angle],[1,1,1]),
-			this.transform([-3,0,2],[0,1,0,angle],[1,1,1]),
-			this.transform([1,0,-2],[0,1,0,angle],[1,1,1]),
-			this.transform([-1,0,-3],[0,1,0,0],[1,1,1]),
-			this.transform([-3,0,-2],[0,1,0,0],[1,1,1]),
+			this.transform([3,1.2,drive],[0,1,0,+Math.PI/2],[1,1,1]),
+			this.transform([8,1,0],[0,0,-1,0],[1,1,1]),
+			this.transform([8,1,3],[0,1,0,angle],[1,1,1]),
+			this.transform([6,1,2],[0,1,0,angle],[1,1,1]),
+			this.transform([6,1,-2],[0,1,0,angle],[1,1,1]),
+			this.transform([8,1,-3],[0,1,0,0],[1,1,1]),
+			this.transform([8,0,-2],[0,1,0,0],[1,1,1]),
 		];
 		var i = 0;
 		for (var key in this.shapes) {
