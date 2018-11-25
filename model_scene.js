@@ -17,17 +17,11 @@ class Model extends Shape {
 };
 window.model_scene =
 class model_scene extends Scene_Component {
-    transform(t,r,s,t1=[0,0,0],r1=[0,1,0,0],s1=[1,1,1],t2=[0,0,0],r2=[0,1,0,0],s2=[1,1,1]){
-        var matrix = Mat4.identity();
+    transform(t,r,s,m=Mat4.identity()){
+        var matrix = m;
         matrix = matrix.times(Mat4.translation(t));
         matrix = matrix.times(Mat4.rotation(r[3],[r[0],r[1],r[2]]));
         matrix = matrix.times(Mat4.scale(s));
-        matrix = matrix.times(Mat4.translation(t1));
-        matrix = matrix.times(Mat4.rotation(r1[3],[r1[0],r1[1],r1[2]]));
-        matrix = matrix.times(Mat4.scale(s1));
-        matrix = matrix.times(Mat4.translation(t2));
-        matrix = matrix.times(Mat4.rotation(r2[3],[r2[0],r2[1],r2[2]]));
-        matrix = matrix.times(Mat4.scale(s2));
         return matrix;
     }
 	model(name, size=1) {
@@ -46,48 +40,61 @@ class model_scene extends Scene_Component {
 		this.shapes = {};
 		this.materials = {};
 		this.model("road.jpg");
-		this.model("sky.jpg");
-		this.model("car.png",0.5);
-		this.model("lollipop.png",1.2);
-		this.model("twist.jpg",0.75);
-		this.model("swirl.jpg",0.75);
-		this.model("icebar.jpg",0.75);
-		this.model("cookie.jpg",0.75);
-		this.model("cone1.jpg",0.75);
+		this.model("sky.jpg",100);
+		this.model("car.png",1);
+		this.model("lollipop.png",2);
+		this.model("twist.jpg",1);
+		this.model("swirl.jpg",1);
+		this.model("icebar.jpg",1);
+		this.model("cookie.jpg",1);
+		this.model("cone1.jpg",0.5);
         this.submit_shapes(context, this.shapes);
+		this.shape = [];
+		this.material = [];
+		for (var key in this.shapes) {
+			this.shape.push(this.shapes[key]);
+			this.material.push(this.materials[key]);
+		}
+		this.props = new Array(10);
+		for (var z=0; z<10; z++) {
+			this.props[z] = new Array(10);
+			for (var x=0; x<10; x++) {
+				this.props[z][x] = 0;
+				if ((x&1)==0 && (z&1)==0) {
+					var value = Math.floor(Math.random()*6)+3;
+					this.props[z][x] = value;
+				}
+			}
+		}
+		this.props[0][0] = 0;
     }
     display(state){
-		//return;
 		if (false) {
 			state.camera_transform 
 				= Mat4.look_at(Vec.of(5,1,1),Vec.of(0,1,0),Vec.of(0,1,0));
 			state.projection_transform
 				= Mat4.perspective(Math.PI/4, this.aspect, 1, 1000);
 		}
-		var gl = this.context.gl;
-		gl.enable(gl.CULL_FACE);
-		gl.frontFace(gl.CCW);
-		gl.cullFace(gl.BACK);
         var time = state.animation_time / 1000;
         var freq = 0.1;
         var angle = 2 * Math.PI * freq * time;
-		var drive = 0.25 * Math.sin(angle*3); 
+		var drive = 0.01 * Math.sin(angle*3);
 		this.tran = [
-			this.transform([6,1,0],[0,0,1,0],[3,0.2,3],[0,0,0],[0,0,1,angle],[1,1,1]),
-			this.transform([0,-10,0],[0,1,0,angle],[10,10,10]),
-			this.transform([3,1.2,drive],[0,1,0,+Math.PI/2],[1,1,1]),
-			this.transform([8,1,0],[0,0,-1,0],[1,1,1]),
-			this.transform([8,1,3],[0,1,0,angle],[1,1,1]),
-			this.transform([6,1,2],[0,1,0,angle],[1,1,1]),
-			this.transform([6,1,-2],[0,1,0,angle],[1,1,1]),
-			this.transform([8,1,-3],[0,1,0,0],[1,1,1]),
-			this.transform([8,0,-2],[0,1,0,0],[1,1,1]),
+			this.transform([8,2,1],[0,0,1,0],[1,1,1]),
+			this.transform([0,-2,0],[0,1,0,0],[1,1,1]),
+			this.transform([0.5,1.2,drive+1],[0,1,0,+Math.PI/2],[1,1,1]),
 		];
-		var i = 0;
-		for (var key in this.shapes) {
-			var transform = this.tran[i++];
-			if (key=="font") continue;
-			this.shapes[key].draw(state, transform, this.materials[key]);
+		this.grid = this.context.scene_components[2].box_grid;
+		for (var z=0; z<10; z++) {
+			for (var x=0; x<10; x++) {
+				var c = this.props[z][x];
+				if (c==0) continue;
+				var tran = this.transform([0,1,0],[0,0,1,0],[1,1,1],this.grid[z][x]);
+				this.shape[c].draw(state, tran, this.material[c]);
+			}
+		}
+		for (var i=1; i<3; i++) {
+			this.shape[i].draw(state, this.tran[i], this.material[i]);
 		}
     }
 };
