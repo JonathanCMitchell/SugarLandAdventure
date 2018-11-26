@@ -14,9 +14,64 @@ class Model extends Shape {
 		this.texture_coords.push(mesh.data.attributes.uv.array);
 		this.indices = mesh.data.index.array;
     }
+	show(x,y,text) {
+		var vertex = [];
+		var normal = [];
+		var texmap = [];
+		var index  = [];
+		var start = x;
+		var k = 0;
+		for (var i=0; i<text.length; i++) {
+			var ch = text.charCodeAt(i);
+			if (ch===10) { 
+				x = start;
+				y = y - 2;
+				continue;
+			}
+			var ss = 64 / 1024;
+			var u0 = (ch & 15) * ss;
+			var v0 = (15 - (ch >> 4)) * ss;
+			var u1 = u0 + ss;
+			var v1 = v0 + ss;
+			vertex = vertex.concat( [ x-1,y-1,0, x+1,y-1,0, x-1,y+1,0, x+1,y+1,0 ] );
+			normal = normal.concat( [ 0,0,1, 0,0,1, 0,0,1, 0,0,1 ] );
+			texmap = texmap.concat( [ u0,v0, u1,v0, u0,v1, u1,v1 ] );
+			index  = index. concat( [ k+0, k+1, k+2, k+3, k+2, k+1 ] );
+			k = k + 4;
+			x = x + 1;
+		}
+		this.positions.length = 0;
+		this.normals.length = 0;
+		this.texture_coords.length = 0;
+		this.indices = 0;
+		this.positions.push(vertex);
+		this.normals.push(normal);
+		this.texture_coords.push(texmap);
+		this.indices = index;
+	}
 };
 window.model_scene =
 class model_scene extends Scene_Component {
+	panel(x,y,text) {
+		var context = this.context;
+		var gl = this.context.gl;
+		var state = context.globals.graphics_state;
+		var camera  = state.camera_transform;
+		var frustum = state.projection_transform;
+		gl.disable(gl.DEPTH_TEST);
+		state.camera_transform 
+			= Mat4.look_at(Vec.of(0,0,30),Vec.of(0,0,0),Vec.of(0,1,0));
+		state.projection_transform
+			= Mat4.perspective(Math.PI/4, this.aspect, 1, 1000);
+		var font = this.shapes.font;
+		font.show(x-20,10-y,text);
+		var shape = { "font": font };
+        this.submit_shapes(this.context, shape);
+		font.draw(state, this.tran[0], this.materials.font);
+		gl.enable(gl.DEPTH_TEST);
+		state.camera_transform = camera;
+		state.projection_transform = frustum;		
+	}
     transform(t,r,s,m=Mat4.identity()){
         var matrix = m;
         matrix = matrix.times(Mat4.translation(t));
@@ -39,6 +94,7 @@ class model_scene extends Scene_Component {
 		this.aspect = context.width/context.height;
 		this.shapes = {};
 		this.materials = {};
+		this.model("font.png");
 		this.model("road.jpg");
 		this.model("sky.jpg",100);
 		this.model("car.png",1);
@@ -61,7 +117,7 @@ class model_scene extends Scene_Component {
 			for (var x=0; x<10; x++) {
 				this.props[z][x] = 0;
 				if ((x&1)==0 && (z&1)==0) {
-					var value = Math.floor(Math.random()*6)+3;
+					var value = Math.floor(Math.random()*6)+4;
 					this.props[z][x] = value;
 				}
 			}
@@ -69,17 +125,20 @@ class model_scene extends Scene_Component {
 		this.props[0][0] = 0;
     }
     display(state){
+        var time = state.animation_time / 1000;
+        var hertz = time!=0 ? 1000/state.animation_delta_time : 60;
+		this.rate = time>0.05 ? this.rate * 0.99 + hertz * 0.01 : hertz;
+        var freq = 0.1;
+        var angle = 2 * Math.PI * freq * time;
+		var drive = 0.01 * Math.sin(angle*3);
 		if (false) {
 			state.camera_transform 
 				= Mat4.look_at(Vec.of(5,1,1),Vec.of(0,1,0),Vec.of(0,1,0));
 			state.projection_transform
 				= Mat4.perspective(Math.PI/4, this.aspect, 1, 1000);
 		}
-        var time = state.animation_time / 1000;
-        var freq = 0.1;
-        var angle = 2 * Math.PI * freq * time;
-		var drive = 0.01 * Math.sin(angle*3);
 		this.tran = [
+			this.transform([0,0,0],[0,1,0,0],[1,1,1]),
 			this.transform([8,2,1],[0,0,1,0],[1,1,1]),
 			this.transform([0,-2,0],[0,1,0,0],[1,1,1]),
 			this.transform([0.5,1.2,drive+1],[0,1,0,+Math.PI/2],[1,1,1]),
@@ -93,8 +152,14 @@ class model_scene extends Scene_Component {
 				this.shape[c].draw(state, tran, this.material[c]);
 			}
 		}
-		for (var i=1; i<3; i++) {
+		for (var i=2; i<4; i++) {
 			this.shape[i].draw(state, this.tran[i], this.material[i]);
 		}
+		var text = "";
+		text += ("00000"+parseInt(time)).slice(-5);
+		text += "     Sugarland Adventure     ";
+		text += ("00000"+parseFloat(this.rate).toFixed(2)).slice(-5);
+		text += "\n\n\n\n\n\n\n\n\n\n";
+		this.panel(0,drive,text);
     }
 };
