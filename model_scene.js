@@ -67,7 +67,8 @@ class model_scene extends Scene_Component {
 		font.show(x-20,10-y,text);
 		var shape = { "font": font };
         this.submit_shapes(this.context, shape);
-		font.draw(state, this.tran[0], this.materials.font);
+		this.tran0 = this.transform([0,0,0],[0,1,0,0],[1,1,1]);
+		font.draw(state, this.tran0, this.materials.font);
 		gl.enable(gl.DEPTH_TEST);
 		state.camera_transform = camera;
 		state.projection_transform = frustum;		
@@ -111,6 +112,7 @@ class model_scene extends Scene_Component {
 			this.shape.push(this.shapes[key]);
 			this.material.push(this.materials[key]);
 		}
+		this.context.scene_components[0].model_scene = this;
 		this.props = new Array(10);
 		for (var z=0; z<10; z++) {
 			this.props[z] = new Array(10);
@@ -124,7 +126,7 @@ class model_scene extends Scene_Component {
 		}
 		this.props[0][0] = 0;
     }
-    display(state){
+    display_props(state){
         var time = state.animation_time / 1000;
         var hertz = time!=0 ? 1000/state.animation_delta_time : 60;
 		this.rate = time>0.05 ? this.rate * 0.99 + hertz * 0.01 : hertz;
