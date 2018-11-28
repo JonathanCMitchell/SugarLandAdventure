@@ -338,8 +338,8 @@ class road_scene extends Scene_Component
             matrix = Mat4.inverse(matrix).map((x, i) => Vec.from(graphics_state.camera_transform[i]).mix(x, 0.1))
             graphics_state.camera_transform = matrix
         }
-		this.model_scene.display_props(graphics_state);
-        this.model_scene.panel(15,3,"road scene");
+        this.model_scene.display_props(graphics_state);
+        //this.model_scene.panel(15,3,"road scene");
       }
   }
   
