@@ -20,22 +20,47 @@ class road_scene extends Scene_Component
                          axis:  new Axis_Arrows()
                        }
 
-        
+        this.render = true;
         //  Initialize model transform matrix of all cubes
         let column_list = []
-        for (var i = 0; i < 20; i+=2)
+        for (var i = 0; i < 40; i+=2)
         {
             let row_list = []
-            for (var j = 0; j < 20; j+=2)
+            for (var j = 0; j < 40; j+=2)
             {
                 // push to rowlist    
               let model_transform = Mat4.identity()
               model_transform = model_transform.times(Mat4.translation(([j, 0, i])));
+              model_transform = model_transform.times(Mat4.translation(([-8,0,-8])))
               row_list.push(model_transform)
             }
             column_list.push(row_list)
 
         }
+
+       this.box_grid_map = [
+          ["border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border"],
+          ["border","grass","sharp_turn_bottom_right","horizontal_road","intersection_down","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","sharp_turn_bottom_left","grass","border"],
+          ["border","grass","vertical_road","grass","vertical_road","grass","grass","prop","grass","grass","grass","prop","grass","grass","prop","prop","grass","vertical_road","grass","border"],
+          ["border","prop","vertical_road","grass","vertical_road","prop","sharp_turn_bottom_right","horizontal_road","horizontal_road","sharp_turn_bottom_left","grass","grass","grass","grass","grass","grass","grass","vertical_road","prop","border"],
+          ["border","prop","vertical_road","grass","vertical_road","grass","vertical_road","phong","phong","vertical_road","grass","prop","sharp_turn_bottom_right","horizontal_road","horizontal_road","sharp_turn_bottom_left","grass","vertical_road","prop","border"],
+          ["border","grass","vertical_road","prop","vertical_road","grass","vertical_road","phong","phong","vertical_road","grass","grass","vertical_road","prop","prop","vertical_road","grass","vertical_road","grass","border"],
+          ["border","grass","vertical_road","grass","vertical_road","prop","sharp_turn_upper_right","horizontal_road","sharp_turn_bottom_left","vertical_road","prop","grass","vertical_road","grass","grass","vertical_road","grass","vertical_road","grass","border"],
+          ["border","grass","vertical_road","grass","vertical_road","grass","prop","grass","vertical_road","vertical_road","prop","grass","vertical_road","grass","grass","vertical_road","prop","vertical_road","prop","border"],
+          ["border","grass","vertical_road","prop","sharp_turn_upper_right","horizontal_road","horizontal_road","horizontal_road","intersection_up","sharp_turn_upper_left","grass","prop","vertical_road","grass","prop","vertical_road","grass","vertical_road","grass","border"],
+          ["border","grass","vertical_road","grass","grass","grass","grass","prop","grass","grass","grass","grass","vertical_road","grass","grass","vertical_road","grass","vertical_road","grass","border"],
+          ["border","prop","vertical_road","grass","grass","grass","grass","grass","grass","prop","grass","grass","vertical_road","grass","grass","vertical_road","prop","vertical_road","grass","border"],
+          ["border","grass","vertical_road","grass","grass","sharp_turn_bottom_right","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","horizontal_road","sharp_turn_upper_left","prop","grass","vertical_road","grass","vertical_road","prop","border"],
+          ["border","grass","vertical_road","prop","grass","vertical_road","grass","grass","grass","grass","grass","prop","grass","grass","grass","sharp_turn_upper_right","horizontal_road","intersection_left","grass","border"],
+          ["border","grass","vertical_road","grass","grass","vertical_road","grass","prop","sharp_turn_bottom_right","horizontal_road","horizontal_road","horizontal_road","horizontal_road","sharp_turn_bottom_left","phong","phong","prop","vertical_road","grass","border"],
+          ["border","prop","sharp_turn_upper_right","horizontal_road","horizontal_road","sharp_turn_upper_left","grass","grass","vertical_road","grass","grass","grass","prop","vertical_road","phong","phong","grass","vertical_road","grass","border"],
+          ["border","prop","prop","grass","grass","grass","phong","phong","vertical_road","grass","prop","prop","grass","vertical_road","grass","grass","grass","vertical_road","grass","border"],
+          ["border","grass","grass","grass","grass","grass","phong","phong","sharp_turn_upper_right","horizontal_road","horizontal_road","horizontal_road","horizontal_road","intersection_up","horizontal_road","horizontal_road","horizontal_road","sharp_turn_upper_left","grass","border"],
+          ["border","grass","grass","grass","grass","grass","grass","grass","grass","grass","prop","prop","grass","grass","grass","grass","grass","grass","grass","border"],
+          ["border","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","prop","prop","grass","grass","border"],
+          ["border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border"]
+        ]
+        
         this.box_grid = column_list
 
         this.step_size = 0
@@ -52,13 +77,46 @@ class road_scene extends Scene_Component
         this.in_turn_left = false
         this.in_turn_right = false
         this.button_holding = false
+        this.texture_map = this.get_textures()
 
         this.submit_shapes( context, shapes );
         this.materials =
           { 
             phong: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/gravel.jpg", true) } ),
             phong1: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6}),
-            phong3: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/car.png", true)})
+            phong3: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/car.png", true)}),
+            forward: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 0.6, texture: context.get_instance("assets/up_arrow.png", true) }),
+
+            //  The following two textures cause collisions
+            prop: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 0.6, texture: context.get_instance("assets/dragon.jpg", true) }),
+            border: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 0.6, texture: context.get_instance("assets/caution.jpg", true) }),
+
+
+            grass: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 0.6, texture: context.get_instance("assets/grass.png", true) }),
+            "vertical_road": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/vertical_road.png", false) }),
+            "horizontal_road": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/horizontal_road.png", false) }),
+            "sharp_turn_upper_left": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/sharp_turn_upper_left.png", false) }),
+            "sharp_turn_upper_right": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/sharp_turn_upper_right.png", false) }),
+            "sharp_turn_bottom_left": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/sharp_turn_bottom_left.png", false) }),
+            "sharp_turn_bottom_right": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/sharp_turn_bottom_right.png", false) }),
+            "smooth_turn_bottom_left_1": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_bottom_left_1.png", false) }),
+            "smooth_turn_bottom_left_2": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_bottom_left_2.png", false) }),
+            "smooth_turn_bottom_left_3": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_bottom_left_3.png", false) }),
+            "smooth_turn_upper_left_1": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_upper_left_1.png", false) }),
+            "smooth_turn_upper_left_2": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_upper_left_2.png", false) }),
+            "smooth_turn_upper_left_3": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_upper_left_3.png", false) }),
+            "smooth_turn_upper_right_1": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_upper_right_1.png", false) }),
+            "smooth_turn_upper_right_2": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_upper_right_2.png", false) }),
+            "smooth_turn_upper_right_3": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_upper_right_3.png", false) }),
+            "smooth_turn_bottom_right_1": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_bottom_right_1.png", false) }),
+            "smooth_turn_bottom_right_2": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_bottom_right_2.png", false) }),
+            "smooth_turn_bottom_right_3": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/smooth_turn_bottom_right_3.png", false) }),
+            "intersection_down": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/intersection_down.png", false) }),
+            "intersection_right": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/intersection_right.png", false) }),
+            "intersection_up": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/intersection_up.png", false) }),
+            "intersection_left": context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, texture: context.get_instance("assets/intersection_left.png", false) }),
+      
+    
           }
          this.lights = [ new Light( Vec.of( -5,5,5,1 ), Color.of( 0,1,1,1 ), 100000 ) ];
          
@@ -66,6 +124,13 @@ class road_scene extends Scene_Component
            'accel': false,
            'decel': false,
            'ludicrous': false,
+           'collision': {
+               'on': false,
+             'forward': false,
+             'backward': false,
+             'forward_slide': false,
+             'backward_slide': false
+           }
          }
 
       // =========== ATTACHES SHAPES =================
@@ -191,15 +256,108 @@ class road_scene extends Scene_Component
         });
         
       }
-    render_box_grid(graphics_state) {
-        for (var i = 0; i < 10; i++)
-        {
-            for(var j = 0; j < 10; j++)
-            {
-                this.shapes.box.draw(graphics_state, this.box_grid[i][j], this.materials.phong)
-            }
+      
+    render_box_grid(graphics_state, texture_map) {
+      for (var i = 0; i < 20; i++) {
+        for (var j = 0; j < 20; j++) {
+          if (texture_map) {
+            this.shapes.box.draw(graphics_state, this.box_grid[i][j], this.materials[texture_map[i][j]])
+          } else {
+            this.shapes.box.draw(graphics_state, this.box_grid[i][j], this.materials.phong)
+          }
         }
+      }
     }
+    // TODO Fix redundancy here
+    get_textures() {
+      this.texture_map = this.box_grid.map((row_list, i) => row_list.map((box, j) => {
+        // sample. pick item in 5th row (i=5), and the 5th box (j=5) and change it to a 'forward' material
+        // which can be seen in this.materials. 
+        return this.box_grid_map[i][j]
+      }))
+      return this.texture_map
+    }
+
+//   check_collision(){
+//     let collision_candidates = this.texture_map.map((row_list, i) => row_list.map((box, j) => {
+//       if (box == 'prop' || box == 'border') {
+// //         console.log('box: ', box, 'at: ', i, j)
+//         return this.box_grid[i][j]
+//       } else {
+//           return []
+//       }
+//     }))
+//     return collision_candidates
+//   }
+
+    get_collision_candidates() {
+      let colls = []
+      let collision_candidates = this.texture_map.map((row_list, i) => row_list.reduce((acc, box,j, arr) => {
+        if (box == 'prop' || box == 'border') {
+    //         console.log('box: ', box, 'at: ', i, j)
+          colls.push(this.box_grid[i][j])
+        }
+      }))
+      return colls
+    }
+
+    check_collision_and_get_states(collision_candidates) {
+      let threshold = 1
+      let states = []
+
+    // loop through collision candidates
+      collision_candidates.map((box, idx) => {
+        // extract x and z values
+        let x = box[0][3]
+        let z = box[2][3]
+        let state = JSON.parse(JSON.stringify(this.state));
+        
+        if (Math.abs(x) <= threshold && Math.abs(z) <= threshold) {
+  //           console.log('we are inside check_collision and collision happened')
+          state.collision.on = true
+  //         console.log("setting collision to be true")
+          if (state.accel) {
+            state.collision.forward = true
+            state.collision.backward = false
+          } else if (state.decel) {
+            state.collision.forward = false
+            state.collision.backward = true
+          } else { // if we are not in one of those states but we are 
+            state.collision.forward = false
+            state.collision.backward = false
+            // check step size whichever one is bigger
+            state.collision.forward_slide = (this.step_size > this.back_step_size ? true: false)
+            state.collision.backward_slide = (this.back_step_size > this.step_size ? true: false) 
+          }
+  //         console.log('inside if clause: ', state.collision)
+          states.push(state)
+          // this.state.collision
+  //         console.log('Box hit was box: ', idx, 'with x: ', x, 'and z: ', z, 'box is: ', box)
+        }  else {
+          state.collision.on = false
+          state.collision.forward = false
+          state.collision.backward = false
+          state.collision.forward_slide = false
+          state.collision.backward_slide = false
+          states.push(state)
+  //         console.log('inside else clause: ', state.collision)
+        }
+        
+      })
+  //     console.log('returning states: ', states)
+      return states
+    }
+
+    perform_state_action(state) {
+      if (state.collision.forward || state.collision.forward_slide) {
+        let transformation_mtx = Mat4.identity()
+        this.transform_box_grid(transformation_mtx, 'collision_forward')
+      } else if (state.collision.backward || state.collision.backward_slide) {
+        let transformation_mtx = Mat4.identity()
+        this.transform_box_grid(transformation_mtx, 'collision_backward')
+      }
+    }
+
 
     // ======= HELPER FUNCTION ==============
     render_box_grid_item(graphics_state, row, col) {
@@ -238,19 +396,44 @@ class road_scene extends Scene_Component
         // return box.times(Mat4.translation([+this.back_step_size, 0, 0]))
       } else if (kind == 'ludicrous_forward') {
         return Mat4.translation([5 * -this.step_size, 0, 0]).times(box)
-      } else {
+      } else if (kind == 'collision_forward') {
+        return Mat4.translation([+1.5, 0, 0]).times(box)
+      } else if (kind == 'collision_backward') {
+        return Mat4.translation([-1.5, 0, 0]).times(box)
+      }  else {
         // do nothing
         return box
       }
        }));   
     }
 
-    display( graphics_state )
-      { graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
+    display( graphics_state ) {
+        graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
         const t = graphics_state.animation_time / 1000
         this.dt = graphics_state.animation_delta_time / 1000
         const dt = graphics_state.animation_delta_time / 1000;
 
+        // check for collision
+        let collision_candidates = this.get_collision_candidates()
+        // loop through collision candidates and check x,z values
+        // For all collision candidates not equal to an empty list put them into a new list
+        let states = this.check_collision_and_get_states(collision_candidates)
+
+        // look through states
+        
+        for (let i = 0; i < states.length; i++) {
+            if (states[i].collision.on == true) {
+                
+                // analyze state and act
+                this.perform_state_action(states[i])
+            } 
+        }
+           
+              
+        
+        
+        
+        
         // Accelerate/decelerate in forward direction
         if (this.state.accel && this.state.ludicrous) {
           // console.log("Accelerate forward")
@@ -297,17 +480,22 @@ class road_scene extends Scene_Component
           this.transform_box_grid(transformation_mtx, 'move_backward')
           this.back_step_size = Math.max(this.back_step_size-this.step_size_decrementer, 0)
         }
+
+      
+    
+  
         //console.log(this.step_size, this.back_step_size)
-        this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
+        //this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
         
         
 
          // TODO:  Draw the required boxes. Also update their stored matrices.
         let axis_transform = Mat4.identity().times(Mat4.translation([2,0,0])).times(Mat4.scale([1/5,1/5,1/5]))
 
-        this.shapes.axis.draw( graphics_state, axis_transform, this.materials.phong1.override({color: Color.of(0,1,1,1.)}) );
         // this.transform_box_grid(transform_sample)
-        this.render_box_grid(graphics_state)
+//       this.get_textures()
+		if (this.render > 0) this.render_box_grid(graphics_state, this.texture_map)
+      
 
         // ==========================================================================================================
         // ==========================================================================================================
@@ -315,21 +503,16 @@ class road_scene extends Scene_Component
         // ==========================================================================================================
         // ==========================================================================================================
 
-        // let sample_m = this.box_grid[2][2]
-        // this.shapes.box.draw(graphics_state, Mat4.translation([0,2,0]).times(sample_m), this.materials.phong.override({color: Color.of(0,1,1,1.)}) );
 
+        
+        //  This block of code is how we move the camera to the back of the car
+        //  If we have the car start at a point that is other than the origin, will need to change the transformations accordingly
         let camera_mat = Mat4.identity();
         camera_mat = camera_mat.times(Mat4.rotation(Math.PI/2, [0, -1.0, 0]))
-        camera_mat = camera_mat.times(Mat4.translation([1, 2., 0]))
+        camera_mat = camera_mat.times(Mat4.rotation(Math.PI/15, [-1, 0, 0]))
+        camera_mat = camera_mat.times(Mat4.translation([1, 3, 7]))
         this.camera_mat = camera_mat
         this.attach_world = camera_mat
-        this.shapes.box.draw(graphics_state, camera_mat.times(Mat4.scale([1/10,1/10,1/10])).times(Mat4.translation([0, 0, 1])), this.materials.phong3)
-
-//         let camera_mat = Mat4.identity();
-//         camera_mat = camera_mat.times(Mat4.translation([0, 0, 30.1]));
-//         camera_mat = camera_mat.times(Mat4.rotation(0.5* Math.PI, Vec.of(1, 0, 0)));
-//         this.shapes.axis.draw(graphics_state, camera_mat, this.materials.phong1)
-//         this.attach_world = camera_mat
 
         //  Set camera_mat
         if (this.attached != undefined)
@@ -338,8 +521,6 @@ class road_scene extends Scene_Component
             matrix = Mat4.inverse(matrix).map((x, i) => Vec.from(graphics_state.camera_transform[i]).mix(x, 0.1))
             graphics_state.camera_transform = matrix
         }
-        this.model_scene.display_props(graphics_state);
-        //this.model_scene.panel(15,3,"road scene");
       }
   }
   

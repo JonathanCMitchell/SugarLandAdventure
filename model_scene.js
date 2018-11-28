@@ -14,7 +14,7 @@ class Model extends Shape {
 		this.texture_coords.push(mesh.data.attributes.uv.array);
 		this.indices = mesh.data.index.array;
     }
-	show(x,y,text) {
+	show(x,y,text,mode) {
 		var vertex = [];
 		var normal = [];
 		var texmap = [];
@@ -28,9 +28,13 @@ class Model extends Shape {
 				y = y - 2;
 				continue;
 			}
-			var ss = 64 / 1024;
+			var ss = 1 / 16;
 			var u0 = (ch & 15) * ss;
 			var v0 = (15 - (ch >> 4)) * ss;
+			if (mode>0) ch -= 64;
+			if (mode>0) ss = 1 / 4;
+			if (mode>0) u0 = (ch & 3) * ss;
+			if (mode>0) v0 = (3 - (ch >> 2)) * ss;
 			var u1 = u0 + ss;
 			var v1 = v0 + ss;
 			vertex = vertex.concat( [ x-1,y-1,0, x+1,y-1,0, x-1,y+1,0, x+1,y+1,0 ] );
@@ -39,6 +43,7 @@ class Model extends Shape {
 			index  = index. concat( [ k+0, k+1, k+2, k+3, k+2, k+1 ] );
 			k = k + 4;
 			x = x + 1;
+			if (mode>0) x = x + 1;
 		}
 		this.positions.length = 0;
 		this.normals.length = 0;
@@ -52,7 +57,41 @@ class Model extends Shape {
 };
 window.model_scene =
 class model_scene extends Scene_Component {
-	panel(x,y,text) {
+	mapping(key) {
+		var props = {
+			"phong" : 8,
+			"phong1" : 0,
+			"phong3" : 1,
+			"forward" : 0,
+			"prop" : 2,
+			"border" : 3,
+			"grass" : 4,
+			"vertical_road" : 12,
+			"horizontal_road" : 10,
+			"sharp_turn_upper_left" : 7,
+			"sharp_turn_upper_right" : 5,
+			"sharp_turn_bottom_left" : 15,
+			"sharp_turn_bottom_right" : 13,
+			"smooth_turn_bottom_left_1" : 13,
+			"smooth_turn_bottom_left_2" : 13,
+			"smooth_turn_bottom_left_3" : 13,
+			"smooth_turn_upper_left_1" : 5,
+			"smooth_turn_upper_left_2" : 5,
+			"smooth_turn_upper_left_3" : 5,
+			"smooth_turn_upper_right_1" : 7,
+			"smooth_turn_upper_right_2" : 7,
+			"smooth_turn_upper_right_3" : 7,
+			"smooth_turn_bottom_right_1" : 15,
+			"smooth_turn_bottom_right_2" : 15,
+			"smooth_turn_bottom_right_3" : 15,
+			"intersection_down" : 14,
+			"intersection_right" : 11,
+			"intersection_up" : 6,
+			"intersection_left" : 9
+ 		};
+		return props[key];
+	}
+	panel(x,y,text,mode=0) {
 		var context = this.context;
 		var gl = this.context.gl;
 		var state = context.globals.graphics_state;
@@ -64,11 +103,15 @@ class model_scene extends Scene_Component {
 		state.projection_transform
 			= Mat4.perspective(Math.PI/4, this.aspect, 1, 1000);
 		var font = this.shapes.font;
-		font.show(x-20,10-y,text);
+		if (mode>0) font = this.shapes.terrain;
+		font.show(x-20,10-y,text,mode);
 		var shape = { "font": font };
+		if (mode>0) shape = { "terrain": font };
         this.submit_shapes(this.context, shape);
 		this.tran0 = this.transform([0,0,0],[0,1,0,0],[1,1,1]);
-		font.draw(state, this.tran0, this.materials.font);
+		var material = this.materials.font;
+		if (mode>0) material = this.materials.terrain;
+		if (mode<=0) font.draw(state, this.tran0, material);
 		gl.enable(gl.DEPTH_TEST);
 		state.camera_transform = camera;
 		state.projection_transform = frustum;		
@@ -116,39 +159,59 @@ class model_scene extends Scene_Component {
 			this.shape.push(this.shapes[key]);
 			this.material.push(this.materials[key]);
 		}
-		this.context.scene_components[0].model_scene = this;
-		this.props = new Array(10);
-		this.grid = new Array(10);
-		for (var z=0; z<10; z++) {
-			this.props[z] = new Array(10);
-			this.grid[z] = new Array(10);
-			for (var x=0; x<10; x++) {
-				this.props[z][x] = 0;
-				if ((x&1)===0 && (z&1)===0) {
-					var range = this.shape.length-4;
-					var value = Math.floor(Math.random()*range)+4;
-					this.props[z][x] = value;
-					this.grid[z][x] = Mat4.identity();
-				}
+		var road_scene = this.context.scene_components[0];
+		var zdim = road_scene.box_grid.length;
+		var xdim = road_scene.box_grid[0].length;
+		var grid_map = road_scene.box_grid_map;
+		this.props = new Array(zdim);
+		this.grid = new Array(zdim);
+		this.stage = "";
+		for (var y=0; y<zdim; y++) {
+			var z = zdim-1-y;
+			this.props[z] = new Array(xdim);
+			this.grid[z] = new Array(xdim);
+			for (var x=0; x<xdim; x++) {
+				var range = this.shape.length-4;
+				var props = Math.floor(Math.random()*range)+4;
+				this.props[z][x] = grid_map[z][x]=="prop" ? props : 0;
+				this.grid[z][x] = Mat4.identity();
+				var value = this.mapping(grid_map[z][x]);
+				this.stage += String.fromCharCode(value+64);
 			}
+			this.stage += "\n";
 		}
-		this.props[0][0] = 0;
-		this.show = 0;
+		this.render = [ 0,1,2,3,4,5,6,7,0,0 ];
+		this.panel(0,0,this.stage,1);
     }
 	make_control_panel() {
-		this.key_triggered_button( "shwo props",["5"],() => {
-			this.show ^= 1;
+		this.key_triggered_button( "render scene   ",["2"],() => { this.render[2] ^= 2; });
+		this.key_triggered_button( "render paenl   ",["3"],() => { this.render[3] ^= 3; });
+		this.key_triggered_button( "render car     ",["4"],() => { this.render[4] ^= 4; });
+		this.key_triggered_button( "render props   ",["5"],() => { this.render[5] ^= 5; });
+		this.key_triggered_button( "render shadow  ",["6"],() => { this.render[6] ^= 6; });
+		this.key_triggered_button( "render terrain ",["7"],() => { this.render[7] ^= 7; });
+		this.key_triggered_button( "render box grid",["8"],() => { this.render[8] ^= 8; });
+		this.key_triggered_button( "debug mode     ",["9"],() => { this.render[9] ^= 9; 
+			if (this.render[9]>0) {
+				for (var i=5; i<8; i++) this.render[i] = 0;
+				this.render[8] = 8;
+			} else {
+				for (var i=2; i<8; i++) this.render[i] = i;
+				this.render[8] = 0;
+			}
 		});
 	}
-    display_props(state){
+    display(state){
         var time = state.animation_time / 1000;
         var hertz = time>0.001 ? 1000/state.animation_delta_time : 30;
-		this.rate = time>0.05 ? this.rate * 0.99 + hertz * 0.01 : hertz;
-		if (this.show===0) return;
+		this.rate = time>0.05 ? this.rate * 0.9 + hertz * 0.1 : hertz;
+		var road_scene = this.context.scene_components[2];
+		road_scene.render = this.render[8]>0;
+		if (this.render[2]<=0) return;
         var freq = 0.1;
         var angle = 2 * Math.PI * freq * time;
 		var drive = 0.01 * Math.sin(angle*3);
-		this.grid = this.context.scene_components[2].box_grid;
+		this.grid = road_scene.box_grid;
 		var xx = this.grid[0][0][0][3];
 		var yy = this.grid[0][0][1][3];
 		var zz = this.grid[0][0][2][3];
@@ -156,8 +219,8 @@ class model_scene extends Scene_Component {
 		var ss = this.grid[0][0][2][0];
 		var rr = Math.atan2(ss, cc)
 		var ww = rr * 180 / Math.PI;
-		var x1 = 11.3 * Math.cos(rr+Math.PI/4) + xx;
-		var z1 = 11.3 * Math.sin(rr+Math.PI/4) + zz;
+		var x1 = 20 * Math.cos(rr+Math.PI/4) + xx;
+		var z1 = 20 * Math.sin(rr+Math.PI/4) + zz;
 		this.lights = [ new Light( Vec.of(x1,yy+10,z1,1), Color.of(0,0.4,0,1),100000) ];
 		if (false) {
 			state.camera_transform 
@@ -167,29 +230,33 @@ class model_scene extends Scene_Component {
 		}
 		this.tran = [
 			this.transform([0,0,0],[0,1,0,0],[1,1,1]),
-			this.transform([9,1.01,9],[1,0,0,Math.PI/2],[10,10,1],this.grid[0][0]),
-			this.transform([0,-2,0],[0,1,0,0],[1,1,1]),
-			this.transform([0.5,1.2,drive+1],[0,1,0,+Math.PI/2],[1,1,1])
+			this.transform([20,1.01,28],[1,0,0,Math.PI/2],[1,1,1],this.grid[0][0]),
+			this.transform([0,-50,0],[0,1,0,0],[1,1,1]),
+			this.transform([0,1.0,drive],[0,1,0,+Math.PI/2],[1,1,1])
 		];
 		state.lights = this.lights;
-		for (var z=0; z<10; z++) {
-			for (var x=0; x<10; x++) {
+		for (var z=0; z<this.props.length; z++) {
+			for (var x=0; x<this.props[0].length; x++) {
 				var c = this.props[z][x];
-				if (c===0) continue;
+				if (c<=0) continue;
 				var tran = this.transform([0,1,0],[0,1,0,angle],[1,1,1],this.grid[z][x]);
+				if (this.render[5]>0)
 				this.shape[c].draw(state, tran, this.material[c]);
 				var trans = this.transform([0,1,0],[0,1,0,angle],[1,1,1],this.grid[z][x]);
+				if (this.render[6]>0)
 				this.shape[c].draw(state, trans, this.materials["shadow"]);
 			}
 		}
 		for (var i=1; i<4; i++) {
+			if (i===1 && this.render[7]<=0) continue;
+			if (i===3 && this.render[4]<=0) continue;
 			this.shape[i].draw(state, this.tran[i], this.material[i]);
 		}
 		var text = "";
-		text += ("00000"+parseInt(time)).slice(-5);
-		text += "     Sugarland Adventure     ";
 		text += ("00000"+this.rate.toFixed(2)).slice(-5);
+		text += "     Sugarland Adventure     ";
+		text += ("00000"+parseInt(time)).slice(-5);
 		text += "\n\n\n\n\n\n\n\n\n\n";
-		this.panel(0,drive,text);
+		if (this.render[3]>0) this.panel(0,drive,text);
     }
 };
