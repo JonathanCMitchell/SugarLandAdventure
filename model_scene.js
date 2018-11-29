@@ -260,6 +260,9 @@ class model_scene extends Scene_Component {
 			if (i===3 && this.render[4]<=0) continue;
 			this.shape[i].draw(state, this.tran[i], this.material[i]);
 		}
+		if (this.render[6]>0) {
+			this.shape[3].draw(state, this.tran[3], this.materials["shadow"]);
+		}
 		var text = "";
 		text += ("00000"+this.rate.toFixed(2)).slice(-5);
 		text += "     Sugarland Adventure     ";
