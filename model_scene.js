@@ -240,7 +240,7 @@ class model_scene extends Scene_Component {
 			this.transform([0,0,0],[0,1,0,0],[1,1,1]),
 			this.transform([20,1.01,28],[1,0,0,Math.PI/2],[1,1,1],this.grid[0][0]),
 			this.transform([0,-50,0],[0,1,0,0],[1,1,1]),
-			this.transform([0,1.0,drive],[0,1,0,+Math.PI/2],[1,1,1])
+			this.transform([0,1.0,drive],[0,1,0,+Math.PI/2],[0.5,0.5,0.5])
 		];
 		state.lights = this.lights;
 		for (var z=0; z<this.props.length; z++) {
