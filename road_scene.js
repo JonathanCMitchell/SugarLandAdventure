@@ -78,6 +78,10 @@ class road_scene extends Scene_Component
         this.in_turn_right = false
         this.button_holding = false
         this.texture_map = this.box_grid_map
+        this.target_map = this.texture_map
+        this.target_score = 0
+        this.target_candidates = this.get_target_candidates()
+
         this.submit_shapes( context, shapes );
         this.materials =
           { 
@@ -324,7 +328,87 @@ class road_scene extends Scene_Component
         this.transform_box_grid(transformation_mtx, 'collision_backward')
       }
     }
+    
+ 
+    get_target_candidates() {
+      let target_candidates = this.target_map.map((row_list, i) => row_list.map((box, j) => {
+        if ((box == 'vertical_road') 
+              || (box == 'horizontal_road')
+              || (box == 'sharp_turn_upper_left')
+              || (box == 'sharp_turn_upper_right')
+              || (box == 'sharp_turn_bottom_right')
+              || (box == 'sharp_turn_bottom_left')
+              || (box == 'intersection_up')) {
+          
+          if (Math.random() < 0.3) {
+            return this.box_grid[i][j]  
+          } else {
+            return []
+          }
+          
+        } else {
+          return []
+        }
+      }))
+      return target_candidates
+    }
 
+    update_target_candidates() {
+      // look through target candidates and update the ones that exist
+      for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 20; j++) {
+          if (this.target_candidates[i][j][0] != undefined) { // or []
+            //update it
+            this.target_candidates[i][j] = this.box_grid[i][j]
+          }
+        }
+      }
+    }
+
+    check_target_candidates() {
+      // using an updated list of target candidates
+      for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 10; j++) {
+          if (this.target_candidates[i][j][0] != undefined) {
+
+            let box = this.target_candidates[i][j]
+            let x = box[0][3]
+            let z = box[2][3]
+            let threshold = 2
+
+            if (Math.abs(x) < threshold && Math.abs(z) < threshold) {
+              // remove it from the list
+              this.target_candidates[i][j] = []
+              this.target_score += 1
+              // TODO Accumulate score
+            }
+          }
+        }
+      }
+    }
+
+  render_targets(graphics_state) {
+    // after render, 
+    // render the targets that are false
+    for (let i = 0; i < 20; i++) {
+      for (let j = 0; j < 20; j++) {
+        if (this.target_candidates[i][j][0] != undefined) {
+          // render the target above the box grid
+          // grab material to render
+          // translate up 2 units in y
+          let M = Mat4.translation([0, 2, 0]).times(this.box_grid[i][j])
+          // render the object 
+
+          // TODO : Using texture_map here but ultimately we will use the target_map
+          // TODO BLACKHAWK
+          // CHANGE SHAPES FROM BOX TO TARGET SHAPE
+          // RENDER TARGET MATERIAL INSTEAD OF TARGET MAPS MATERIAL
+          this.shapes.box.draw(graphics_state, M, this.materials.phong1)
+        }
+      }
+    }
+
+  }
 
     // ======= HELPER FUNCTION ==============
     render_box_grid_item(graphics_state, row, col) {
@@ -426,7 +510,12 @@ class road_scene extends Scene_Component
             } 
         }
            
-              
+        // targeting
+//         console.log(this.target_candidates)
+        this.update_target_candidates()
+        this.check_target_candidates()
+        // // render targets
+        this.render_targets(graphics_state)
         // console.log('collision_candidates: ', collision_candidates)
         
         
