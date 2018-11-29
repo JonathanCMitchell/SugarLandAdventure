@@ -253,25 +253,20 @@ class road_scene extends Scene_Component
           this.particles_array.splice(remove_particles_indexes[i], 1)
       }
     }
-    // TODO Fix redundancy here
-    get_textures() {
-      this.texture_map = this.box_grid.map((row_list, i) => row_list.map((box, j) => {
-        // sample. pick item in 5th row (i=5), and the 5th box (j=5) and change it to a 'forward' material
-        // which can be seen in this.materials. 
-        return this.box_grid_map[i][j]
-      }))
-      return this.texture_map
-    }
+  
 
     get_collision_candidates() {
       let colls = []
-      let collision_candidates = this.texture_map.map((row_list, i) => row_list.reduce((acc, box,j, arr) => {
-        if (box == 'prop' || box == 'border') {
-          colls.push(this.box_grid[i][j])
+      for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 20; j++) {
+          if (this.texture_map[i][j] == 'prop' || this.texture_map[i][j] == 'border') {
+            colls.push(this.box_grid[i][j])
+          }
         }
-      }))
+      }
       return colls
     }
+    
 
     check_collision_and_get_states(collision_candidates) {
       let threshold = 1
@@ -432,7 +427,7 @@ class road_scene extends Scene_Component
         }
            
               
-        
+        // console.log('collision_candidates: ', collision_candidates)
         
         
         
@@ -494,7 +489,7 @@ class road_scene extends Scene_Component
     
   
         //console.log(this.step_size, this.back_step_size)
-        //this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
+        this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
         
         
 
