@@ -188,7 +188,7 @@ class model_scene extends Scene_Component {
 	make_control_panel() {
 		this.key_triggered_button( "start game     ",["1"],() => { this.render[1] ^= 1; });
 		this.key_triggered_button( "render scene   ",["2"],() => { this.render[2] ^= 2; });
-		this.key_triggered_button( "render paenl   ",["3"],() => { this.render[3] ^= 3; });
+		this.key_triggered_button( "render panel   ",["3"],() => { this.render[3] ^= 3; });
 		this.key_triggered_button( "render car     ",["4"],() => { this.render[4] ^= 4; });
 		this.key_triggered_button( "render props   ",["5"],() => { this.render[5] ^= 5; });
 		this.key_triggered_button( "render shadow  ",["6"],() => { this.render[6] ^= 6; });
