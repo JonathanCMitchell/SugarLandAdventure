@@ -118,7 +118,7 @@ class road_scene extends Scene_Component
       
     
           }
-         this.lights = [ new Light( Vec.of( -5,5,5,1 ), Color.of( 0,1,1,1 ), 100000 ) ];
+         this.lights = [ new Light( Vec.of( -5,5,5,1 ), Color.of( 1,1,1,1 ), 100000 ) ];
          
          this.state = {
            'accel': false,

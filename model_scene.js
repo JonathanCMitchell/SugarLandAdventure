@@ -142,12 +142,14 @@ class model_scene extends Scene_Component {
 		this.model("terrain.jpg");
 		this.model("sky.jpg",100);
 		this.model("car.png",1);
+		this.model("road.jpg",1);
 		this.model("lollipop.png",2);
 		this.model("twist.jpg",1);
 		this.model("swirl.jpg",1);
 		this.model("icebar.jpg",1);
 		this.model("cookie.jpg",1);
 		this.model("cone1.jpg",0.5);
+		this.model("donut.jpg",1);
         this.submit_shapes(context, this.shapes);
 		this.materials["shadow"] = context.get_instance(Shadow_Shader)
 			.material(Color.of(0,0,0,1),
@@ -171,8 +173,8 @@ class model_scene extends Scene_Component {
 			this.props[z] = new Array(xdim);
 			this.grid[z] = new Array(xdim);
 			for (var x=0; x<xdim; x++) {
-				var range = this.shape.length-4;
-				var props = Math.floor(Math.random()*range)+4;
+				var range = this.shape.length-5;
+				var props = Math.floor(Math.random()*range)+5;
 				this.props[z][x] = grid_map[z][x]=="prop" ? props : 0;
 				this.grid[z][x] = Mat4.identity();
 				var value = this.mapping(grid_map[z][x]);
@@ -184,6 +186,7 @@ class model_scene extends Scene_Component {
 		this.panel(0,0,this.stage,1);
     }
 	make_control_panel() {
+		this.key_triggered_button( "start game     ",["1"],() => { this.render[1] ^= 1; });
 		this.key_triggered_button( "render scene   ",["2"],() => { this.render[2] ^= 2; });
 		this.key_triggered_button( "render paenl   ",["3"],() => { this.render[3] ^= 3; });
 		this.key_triggered_button( "render car     ",["4"],() => { this.render[4] ^= 4; });
@@ -211,6 +214,11 @@ class model_scene extends Scene_Component {
         var freq = 0.1;
         var angle = 2 * Math.PI * freq * time;
 		var drive = 0.01 * Math.sin(angle*3);
+		if (this.render[1]>0) {
+			this.menu(state);
+			return;
+		}
+		this.context.gl.clearColor(50/255, 75/255, 125/255, 1.0);
 		this.grid = road_scene.box_grid;
 		var xx = this.grid[0][0][0][3];
 		var yy = this.grid[0][0][1][3];
@@ -259,4 +267,69 @@ class model_scene extends Scene_Component {
 		text += "\n\n\n\n\n\n\n\n\n\n";
 		if (this.render[3]>0) this.panel(0,drive,text);
     }
+    transforms(t,r,s,t1=[0,0,0],r1=[0,1,0,0],s1=[1,1,1],t2=[0,0,0],r2=[0,1,0,0],s2=[1,1,1]){
+        var matrix = Mat4.identity();
+        matrix = matrix.times(Mat4.translation(t));
+        matrix = matrix.times(Mat4.rotation(r[3],[r[0],r[1],r[2]]));
+        matrix = matrix.times(Mat4.scale(s));
+        matrix = matrix.times(Mat4.translation(t1));
+        matrix = matrix.times(Mat4.rotation(r1[3],[r1[0],r1[1],r1[2]]));
+        matrix = matrix.times(Mat4.scale(s1));
+        matrix = matrix.times(Mat4.translation(t2));
+        matrix = matrix.times(Mat4.rotation(r2[3],[r2[0],r2[1],r2[2]]));
+        matrix = matrix.times(Mat4.scale(s2));
+        return matrix;
+    }
+    menu(state){
+        var time = state.animation_time / 1000;
+        var hertz = time!=0 ? 1000/state.animation_delta_time : 30;
+		this.fps = this.fps * 0.9 + hertz * 0.1;
+        var freq = 0.1;
+        var angle = 2 * Math.PI * freq * time;
+		var drive = 0.25 * Math.sin(angle*3);
+		var context = this.context;
+		var gl = this.context.gl;
+		var state = context.globals.graphics_state;
+		var camera  = state.camera_transform;
+		var frustum = state.projection_transform;
+			state.camera_transform 
+				= Mat4.look_at(Vec.of(5,1,drive+1),Vec.of(0,1,0),Vec.of(0,1,0));
+			state.projection_transform
+				= Mat4.perspective(Math.PI/4, this.aspect, 1, 1000);
+		this.tran = [
+			this.transforms([0,0,0],[0,1,0,0],[1,1,1]),
+			this.transforms([0,0,0],[0,1,0,0],[1,1,1]),
+			this.transforms([0,-100,0],[0,1,0,0],[1,1,1]),
+			this.transforms([2.5,0.2,drive-0.3],[0,1,0,-Math.PI/2],[0.7,0.7,0.7]),
+			this.transforms([0,0,0],[0,0,1,0],[3,0.2,3],[0,0,0],[0,0,-1,angle],[1,1,2]),
+			this.transforms([1,0,2.5],[0,1,0,angle],[1,1,1]),
+			this.transforms([-1,0,2.5],[0,1,0,angle],[0.9,0.9,0.9]),
+			this.transforms([-3,0,2],[0,1,0,angle],[0.7,0.7,0.7]),
+			this.transforms([1,0,-2],[0,1,0,angle],[1,1,1]),
+			this.transforms([-1,0,-3],[0,1,0,0],[0.9,0.9,0.9]),
+			this.transforms([-3,0,-2],[0,1,0,0],[0.7,0.7,0.7]),
+			this.transforms([-4,0,0],[0,0,1,-0.3],[1,1,1]),
+		];
+		for (var i=2; i<12; i++) {
+			if (i===3) continue;
+			var transform = this.tran[i];
+			this.shape[i].draw(state, transform, this.material[i]);
+		}
+		this.shape[3].draw(state, this.tran[3], this.material[3]);
+		state.camera_transform = camera;
+		state.projection_transform = frustum;
+		this.context.gl.clearColor(0,0,0,1);
+		var text = "";
+		text += "\n";
+		text += "          Sugarland Adventure\n";
+		text += "\n\n";
+		text += "          Press 1 to continue\n";
+		text += "\n";
+		text += "             Calvin Pham     \n";
+		text += "              Faith Yu       \n";
+		text += "           Jonathan Mitchell \n";
+		text += "             Minnie Tu       \n";
+		text += "\n\n\n\n\n\n\n\n";
+		this.panel(0,drive*10,text);	
+	}
 };
