@@ -512,10 +512,10 @@ class road_scene extends Scene_Component
            
         // targeting
 //         console.log(this.target_candidates)
-        this.update_target_candidates()
-        this.check_target_candidates()
-        // // render targets
-        this.render_targets(graphics_state)
+        // this.update_target_candidates()
+        // this.check_target_candidates()
+        // // // render targets
+        // this.render_targets(graphics_state)
         // console.log('collision_candidates: ', collision_candidates)
         
         
