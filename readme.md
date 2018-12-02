@@ -1,20 +1,29 @@
-### Notes:
-Inside `road_scene.js` you will find the class that creates a grid of boxes. Each box is size (2,2,2). You can render shapes using the transformation matrices stored in `this.box_grid`.
-`this.box_grid` is a 2D array that consists of rows and columns. Each item in this grid represents a transformation matrix that will enable you to rotate and translate to the point at which to render any box or item. 
+### 1. Description
+TODO: 
 
-The function render_box_grid() does this for you. 
+### 2. Contributions
+Jonathan Mitchell
+Contributions:
+* Car movement mechanics (accelerate, decelerate, turn right, left, reverse)
+* Data structure design
+* Collision detection
+Car movement mechanics: 
+I designed the car mechanics by creating a grid of road blocks, and allowing the car to move forward, backward, turn left and turn right. I did this by placing the camera at the origin and manipulating a 2D array of transformation matrices. I decided early on that I would move the road instead of the camera. 
+I did this early on because I didn't want to have to compute an inverse (because of the computational load). So when the car moves forward, the world is actually moving backwards. There were challenges in providing acceleration and deceleration mechanics. The car begins to accelerate if you press the acceleration button, but if you let go, it will continue to move forward until it stops. Features like this made the whole game more realistic, and they were the most challenging part of the whole project for me.
 
-If you wish to render some shapes onto the box grid. Simply keep track of the row and column of the corresponding grid cell that you want to render it on. 
-Then, apply your shape using that transformation matrix as the shape origin. Note: You must translate up 2 units in Y to render your shape. Because you want to place it on top of the box, not where the box actually is. 
+Data structures:
+The road is comprised of 2x2 blocks. When we drive the car we are simply driving on top of those blocks. I organized the road using a 2D array known as `this.box_grid`. Each cell contains a transformation matrix for each block in the road, and it updates as we drive the car. This data struture proved to be very useful in various stages throughout this project. Its simplicity and availability allowed us to pass it between our scenes so that my team members were able to render props (shapes) and textures on top of them. We were able to maintain correspondence with each block in the road simply by passing in an index into the 2D array, which I did when performing collision detection.
 
-Here is an example of how you can do that. You will find this example commented out in road_scene.js
+Collision Detection:
+Because of the decisions made earlier to keep the camera at the origin, and to keep track of all the blocks using `this.box_grid`, I was able to implement collision detection. On each frame we simply check the `x` and `z` coordinates of each box to see if they are within a certain distance from the origin. If so, we assume they have collided and we trigger our collision action.
 
-```
-// Uncomment below for sample on how to render a shape onto box grid
-let sample_m = this.box_grid[2][2]
-this.shapes.box.draw(graphics_state, Mat4.translation([0,2,0]).times(sample_m), this.materials.phong.override({color: Color.of(0,1,1,1.)}) );
-```
+* Move forward
+* Move backward
+
+### 3. Details on how to run
 
 
-Sidenote: Breaking is not implemented yet.
-We are still using axis arrows to keep track of our origin and our camera. Please don't delete them. 
+### 4. Extra:
+
+
+
