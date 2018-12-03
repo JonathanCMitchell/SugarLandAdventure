@@ -66,7 +66,7 @@ class road_scene extends Scene_Component
         this.step_size = 0
         this.step_size_incrementer = 0.0001
         this.step_size_decrementer = 0.0001
-        this.speed_limit = 0.0100
+        this.speed_limit = 0.0250
         this.rotation_amount = 1
         this.back_step_size = 0
         this.rotation_angle = Math.PI/60
@@ -88,7 +88,7 @@ class road_scene extends Scene_Component
             phong: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/gravel.jpg", true) } ),
             phong1: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6}),
             phong3: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/car.png", true)}),
-            particle: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, diffusivity: 0, specularity: 0, texture: context.get_instance("assets/fire_with_smoke.png", false) }),
+            particle: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, diffusivity: 0, specularity: 0, texture: context.get_instance("assets/nos.png", false) }),
             
       
     
@@ -115,7 +115,7 @@ class road_scene extends Scene_Component
     make_control_panel()
       { 
         this.key_triggered_button( "View world",  [ "0" ], () => this.attached = () => this.initial_camera_location );
-        this.key_triggered_button( "accelerate",  [ "t" ], () => { 
+        this.key_triggered_button( "Forward",  [ "w" ], () => { 
           // toggle acceleration on
           this.state.accel = true
           this.state.decel = false
@@ -124,7 +124,7 @@ class road_scene extends Scene_Component
           this.state.accel = false
         });
 
-        this.key_triggered_button( "reverse",  [ "y" ], () => { 
+        this.key_triggered_button( "reverse",  [ "s" ], () => { 
           this.state.accel = false
           this.state.decel = true
 
@@ -140,46 +140,7 @@ class road_scene extends Scene_Component
         });
 
 
-
-        // NOTE: Break not implemented yet
-        this.key_triggered_button( "break",  [ "k" ], () => { 
-          // toggle acceleration on
-        
-
-          if (Math.abs(this.step_size) > 0) {
-            
-            let transformation_mtx = Mat4.identity()
-
-            if (this.state.accel) {
-              this.step_size -= 0.05
-              // move forward while decreasing
-              // include guard so you dont go the other way
-              this.back_step_size = Math.max(0, this.step_size)
-              this.transform_box_grid(transformation_mtx, 'move_forward')
-            } else if (this.state.decel) {
-              this.back_step_size -= 0.05
-              this.back_step_size = Math.max(0, this.back_step_size)
-              // move backward while decreasing
-              this.transform_box_grid(transformation_mtx, 'move_backward')
-            } else if (this.step_size <= 0) {
-              this.state.accel = false
-            } else if (this.back_step_size <= 0) {
-              this.state.decel = false
-            }
-
-          }
-
-          // TODO decrease current speed to 0
-          let transformation_mtx = Mat4.identity()
-          // move backward
-          // Move the step_size to 0 and reset it
-          // reset step size to 0
-          // reset step size by moving it to 0 slowly
-          this.transform_box_grid(transformation_mtx, 'move_backward')
-        });
-
-
-        this.key_triggered_button( "turn left",  [ "q" ], () => { 
+        this.key_triggered_button( "turn left",  [ "a" ], () => { 
           let transformation_mtx = Mat4.identity()
 
           let rot_step = this.rotation_amount * this.step_size
@@ -197,7 +158,7 @@ class road_scene extends Scene_Component
 
           
         });
-        this.key_triggered_button( "turn right",  [ "e" ], () => { 
+        this.key_triggered_button( "turn right",  [ "d" ], () => { 
         // Whatever you want to rotate around, make its X, Y, Z coordinates here
         // This will translate around the origin
           let transformation_mtx = Mat4.identity()
@@ -248,7 +209,7 @@ class road_scene extends Scene_Component
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[0], [1,0,0]))
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[1], [0,1,0]))
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[2], [0,0,1]))
-          this.shapes.box.draw(graphics_state, particle_model_transform.times(Mat4.scale([0.04, 0.04, 0.04])), this.materials.particle)
+          this.shapes.box.draw(graphics_state, particle_model_transform.times(Mat4.scale([0.038, 0.038, 0.038])), this.materials.particle)
           this.particles_array[i].lifetime = this.particles_array[i].lifetime + 1
       }
 
@@ -446,7 +407,7 @@ class road_scene extends Scene_Component
         return Mat4.translation([+this.back_step_size, 0, 0]).times(box)
         // return box.times(Mat4.translation([+this.back_step_size, 0, 0]))
       } else if (kind == 'ludicrous_forward') {
-        return Mat4.translation([5 * -this.step_size, 0, 0]).times(box)
+        return Mat4.translation([3 * -this.step_size, 0, 0]).times(box)
       } else if (kind == 'collision_forward') {
         return Mat4.translation([+1.5, 0, 0]).times(box)
       } else if (kind == 'collision_backward') {
@@ -571,14 +532,16 @@ class road_scene extends Scene_Component
         {
             this.particles_array.push({matrix: Mat4.identity().times(Mat4.translation([-0.7,1.2,0])), 
             lifetime: 0, rot: [Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI ], 
-            trans: [0, Math.random() * (0.07 - (-0.07)) - 0.07, Math.random() * (0.07 - (-0.07)) - 0.07]})
+            trans: [0, Math.random() * (0.05 - (-0.05)) - 0.05, Math.random() * (0.05 - (-0.05)) - 0.05]})
+            
+            
         }
 
       
     
   
         //console.log(this.step_size, this.back_step_size)
-        this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
+//         this.shapes.axis.draw(graphics_state, Mat4.identity(), this.materials.phong.override({color: Color.of(1,1,1,1)}))
         
         
 
