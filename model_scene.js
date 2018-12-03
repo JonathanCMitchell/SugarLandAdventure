@@ -127,7 +127,7 @@ class model_scene extends Scene_Component {
 		var context = this.context;
 		var key = name.slice(0,-4);
 		this.shapes[key] = new Model("models/"+key+".json", size);
-		this.materials[key] = context.get_instance(Bump_Map)
+		this.materials[key] = context.get_instance(Phong_Shader)
 			.material(Color.of(0,0,0,1),
 			{ambient: 1.0, diffusivity: 0.0, specularity: 0.0 })
 			.override({texture:context.get_instance("models/"+name, true)});

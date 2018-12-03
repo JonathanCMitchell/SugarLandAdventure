@@ -54,6 +54,13 @@ model_scene.js (340 lines)
   Models and Textures
     font, sky dome, car, road, cookie, ice bar, lollipop, swirl candy, twist candy
 
+Faith Yu
+Contributions:
+* created props and integrate them into model_scene
+* implemented and integrated bump map shader
+* designed the game play, model and features to implement
+* designed and created the world including the track
+
 ### 3. Details on how to run
 If you are a mac user, double click on `host.command` to start the server
 If you are a windows user, double click on `host.bat` to start the server
