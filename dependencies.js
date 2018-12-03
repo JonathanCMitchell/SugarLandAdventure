@@ -801,3 +801,26 @@ class Shape_From_File extends Shape          // A versatile standalone Shape tha
   draw( graphics_state, model_transform, material )       // Cancel all attempts to draw the shape before it loads.
     { if( this.ready ) super.draw( graphics_state, model_transform, material );   }
 }
+
+class Bump_Map extends Phong_Shader
+{ fragment_glsl_code()
+    { return `
+        uniform sampler2D texture;
+        void main()
+        { if( GOURAUD || COLOR_NORMALS )    
+          { gl_FragColor = VERTEX_COLOR;                
+            return;
+          }                                 
+                                            
+          
+          vec4 tex_color = texture2D( texture, f_tex_coord );                    
+          vec3 bumped_N  = normalize( N + tex_color.rgb - .5*vec3(1,1,1) );      
+                                                                                 
+                                                                   
+                                                                                 
+          if( USE_TEXTURE ) gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
+          else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
+          gl_FragColor.xyz += phong_model_lights( bumped_N );                    
+        }`;
+    }
+}
