@@ -4,7 +4,7 @@ TODO:
 ### 2. Contributions
 Jonathan Mitchell
 Contributions:
-* Car movement mechanics (accelerate, decelerate, turn right, left, reverse)
+* Car movement mechanics (accelerate, decelerate, turn right, left, reverse, ludicrous mode)
 * Data structure design
 * Collision detection
 
