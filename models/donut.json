@@ -1,12 +1,4 @@
 {
-    "metadata":{
-        "version":3,
-        "generator":"io_three",
-        "position":26400,
-        "type":"BufferGeometry",
-        "normal":26400,
-        "uv":26400
-    },
     "data":{
         "groups":[{
             "start":0,

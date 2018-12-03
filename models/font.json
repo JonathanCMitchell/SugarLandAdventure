@@ -1,12 +1,4 @@
 {
-    "metadata":{
-        "type":"BufferGeometry",
-        "generator":"io_three",
-        "position":4,
-        "uv":4,
-        "normal":4,
-        "version":3
-    },
     "data":{
         "groups":[{
             "count":6,

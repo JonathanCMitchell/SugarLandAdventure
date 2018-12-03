@@ -1,13 +1,4 @@
 {
-    "metadata": {
-        "normal": 2202,
-        "index": 3258,
-        "generator": "io_three",
-        "uv": 2202,
-        "type": "BufferGeometry",
-        "version": 3,
-        "position": 2202
-    },
     "data": {
         "index": {
                 "type": "Uint16Array",
