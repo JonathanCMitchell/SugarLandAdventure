@@ -56,10 +56,12 @@ model_scene.js (340 lines)
 
 Faith Yu
 Contributions:
-* created props and integrate them into model_scene
-* implemented and integrated bump map shader
 * designed the game play, model and features to implement
 * designed and created the world including the track
+* created props and integrate and display them through model_scene
+* implemented and integrated bump map shader
+
+
 
 ### 3. Details on how to run
 If you are a mac user, double click on `host.command` to start the server
