@@ -1,26 +1,3 @@
-class Bump_Map extends Phong_Shader
-{ fragment_glsl_code()
-    { return `
-        uniform sampler2D texture;
-        void main()
-        { if( GOURAUD || COLOR_NORMALS )    
-          { gl_FragColor = VERTEX_COLOR;                
-            return;
-          }                                 
-                                            
-          
-          vec4 tex_color = texture2D( texture, f_tex_coord );                    
-          vec3 bumped_N  = normalize( N + tex_color.rgb - .5*vec3(1,1,1) );      
-                                                                                 
-                                                                   
-                                                                                 
-          if( USE_TEXTURE ) gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
-          else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
-          gl_FragColor.xyz += phong_model_lights( bumped_N );                    
-        }`;
-    }
-}
-
 class Model extends Shape {
     constructor(name, size=1) {
         super("positions", "normals", "texture_coords");
@@ -150,7 +127,7 @@ class model_scene extends Scene_Component {
 		var context = this.context;
 		var key = name.slice(0,-4);
 		this.shapes[key] = new Model("models/"+key+".json", size);
-		this.materials[key] = context.get_instance(Phong_Shader)
+		this.materials[key] = context.get_instance(Bump_Map)
 			.material(Color.of(0,0,0,1),
 			{ambient: 1.0, diffusivity: 0.0, specularity: 0.0 })
 			.override({texture:context.get_instance("models/"+name, true)});
