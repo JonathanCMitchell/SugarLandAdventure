@@ -267,6 +267,11 @@ class model_scene extends Scene_Component {
 			this.transform([0,1.0,drive],[0,1,0,+Math.PI/2],[0.5,0.5,0.5])
 		];
 		state.lights = this.lights;
+		for (var i=1; i<4; i++) {
+			if (i===1 && this.render[7]<=0) continue;
+			if (i===3 && this.render[4]<=0) continue;
+			this.shape[i].draw(state, this.tran[i], this.material[i]);
+		}
 		for (var z=0; z<this.props.length; z++) {
 			for (var x=0; x<this.props[0].length; x++) {
 				var c = this.props[z][x];
@@ -279,18 +284,13 @@ class model_scene extends Scene_Component {
 				this.shape[c].draw(state, trans, this.materials["shadow"]);
 			}
 		}
-		for (var i=1; i<4; i++) {
-			if (i===1 && this.render[7]<=0) continue;
-			if (i===3 && this.render[4]<=0) continue;
-			this.shape[i].draw(state, this.tran[i], this.material[i]);
-		}
 		if (this.render[6]>0) {
 			this.shape[3].draw(state, this.tran[3], this.materials["shadow"]);
 		}
 		var text = "";
-		text += ("     ");
+		text += ("00000"+this.rate.toFixed(2)).slice(-5);
 		text += "     Sugarland Adventure     ";
-		text += ("     ");
+		text += ("00000"+parseInt(time)).slice(-5);
 		text += "\n\n\n\n\n\n\n\n\n\n";
 		if (this.render[3]>0) this.panel(0,drive,text);
     }
@@ -316,6 +316,8 @@ class model_scene extends Scene_Component {
 		var drive = 0.25 * Math.sin(angle*3);
 		var context = this.context;
 		var gl = this.context.gl;
+		gl.clearColor(0.0, 0.5, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		var state = context.globals.graphics_state;
 		var camera  = state.camera_transform;
 		var frustum = state.projection_transform;
