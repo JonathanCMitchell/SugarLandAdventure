@@ -40,19 +40,19 @@ To make ludicrous mode a little more interesting and not just a mere speed-up of
 Minnie Tu
 Contributions:
 shadow_shader.js (93 lines)
-    * shadow shader for car and all props
+* shadow shader for car and all props
 model_scene.js (340 lines)
 Title scene:
-    * rendering of animated car, road, props, titles
+* rendering of animated car, road, props, titles
  Game scene:
-    * font and terrain rendering optimization by calculating vertex, UV, normal in two draw calls
-    * car, props and shadows rendering with projection using shadow_shader.js
-    * 2nd camera overlay display for font rendering including frame rate (fps) and time counter 
-    * read box_grid transformation from road_scene.js and render props to its location
-    * read terrain definition array from road_scene.js and construct to one single model from 2D array[20][20]
-    * keyboard enable/disable controls: scene, panel, car, props, shadow, terrain
-  Models and Textures
-    * font, sky dome, car, road, cookie, ice bar, lollipop, swirl candy, twist candy
+* font and terrain rendering optimization by calculating vertex, UV, normal in two draw calls
+* car, props and shadows rendering with projection using shadow_shader.js
+* 2nd camera overlay display for font rendering including frame rate (fps) and time counter 
+* read box_grid transformation from road_scene.js and render props to its location
+* read terrain definition array from road_scene.js and construct to one single model from 2D array[20][20]
+* keyboard enable/disable controls: scene, panel, car, props, shadow, terrain
+Models and Textures
+* font, sky dome, car, road, cookie, ice bar, lollipop, swirl candy, twist candy
 
 **Faith Yu**<br />
 Contributions: <br />
