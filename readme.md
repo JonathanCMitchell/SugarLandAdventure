@@ -18,6 +18,22 @@ The road is comprised of 2x2 blocks. When we drive the car we are simply driving
 Collision Detection:
 Because of the decisions made earlier to keep the camera at the origin, and to keep track of all the blocks using `this.box_grid`, I was able to implement collision detection. On each frame we simply check the `x` and `z` coordinates of each box to see if they are within a certain distance from the origin. If so, we assume they have collided and we trigger our collision action. In practice, the hardest part was managing the display() function, and using flags with a global state member variable conditioned on the road class in order to keep track of our current state.
 
+Minnie Tu
+Contribution:
+shadow_shader.js (93 lines)
+    shadow shader for car and all props
+model_scene.js (340 lines)
+  Title scene:
+    rendering of animated car, road, props, titles
+  Game scene:
+    font and terrain rendering optimization by calculating vertex, UV, normal in two draw calls
+    car, props and shadows rendering with projection using shadow_shader.js
+    2nd camera overlay display for font rendering including frame rate (fps) and time counter 
+    read box_grid transformation from road_scene.js and render props to its location
+    read terrain definition array from road_scene.js and construct to one single model from 2D array[20][20]
+    keyboard enable/disable controls: scene, panel, car, props, shadow, terrain
+  Models and Textures
+    font, sky dome, car, road, cookie, ice bar, lollipop, swirl candy, twist candy
 
 ### 3. Details on how to run
 
