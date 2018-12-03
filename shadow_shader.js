@@ -86,7 +86,7 @@ class Shadow_Shader extends Phong_Shader {
             precision mediump float;
 			uniform sampler2D texture;
             void main(void) {
-                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.7);
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.8);
             }
 		`;
 	}
