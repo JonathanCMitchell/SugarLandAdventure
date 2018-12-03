@@ -22,14 +22,5 @@
                 "itemSize": 3
             }
         }
-    },
-    "metadata": {
-        "version": 3,
-        "index": 1152,
-        "generator": "io_three",
-        "position": 1239,
-        "type": "BufferGeometry",
-        "uv": 1239,
-        "normal": 1239
     }
 }

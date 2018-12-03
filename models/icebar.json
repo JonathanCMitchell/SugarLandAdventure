@@ -35,13 +35,5 @@
                 "itemSize":3
             }
         }
-    },
-    "metadata":{
-        "type":"BufferGeometry",
-        "uv":6076,
-        "position":6076,
-        "version":3,
-        "generator":"io_three",
-        "normal":6076
     }
 }
