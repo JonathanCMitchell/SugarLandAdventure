@@ -37,9 +37,7 @@ Particle effects:
 To make ludicrous mode a little more interesting and not just a mere speed-up of the car, we decided to add particle effects that would be visible whenever the player enters into this mode. Specifically, blue particles to signify nitrous and smoke will come out from behind the car. These particles are given a random translation of a short distance from the car's "exhaust" and also a random rotation to improve the effect visually. These particles also move with the world when turning left and right to mimic actual flames or smoke that come from an actual car. 
 
 
-Minnie Tu
-
-Contributions:
+Minnie Tu Contributions:
 
 shadow_shader.js (93 lines)
 * shadow shader for car and all props
@@ -80,7 +78,7 @@ To better fit the team's task allocation and benefit all team members, I was in 
 If you are a mac user, double click on `host.command` to start the server
 If you are a windows user, double click on `host.bat` to start the server
 
-After the server is started, in your web browswer (preferably Chrome) go to `localhost:8000`
+After the server is started, in your web browser (preferably Chrome) go to `localhost:8000`
 
 ### 4. Extra:
 
