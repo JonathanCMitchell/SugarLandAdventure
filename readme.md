@@ -1,7 +1,7 @@
 ### 1. Description
 Sugarland Adventure is a driving simulator with a candyland-like theme. Take the car for a spin around a small track we have designed and enjoy the cute, delicious props we made to accompany the track! 
 
-Basic car movements are as follows: Move Forward - W, Reverse - S, Left turn - A, Right turn - D, Ludicrous mode - M.
+Basic car movements are as follows: Forward - W, Reverse - S, Left - A, Right - D, Ludicrous mode - L
 
 ### 2. Contributions
 Jonathan Mitchell
@@ -54,14 +54,20 @@ model_scene.js (340 lines)
   Models and Textures
     font, sky dome, car, road, cookie, ice bar, lollipop, swirl candy, twist candy
 
-Faith Yu
-Contributions:
+**Faith Yu**<br />
+Contributions: <br />
+*Engineering* <br />
+* created props through calculation of indexes, uv, vertices, and texture mapping
+* integrated and displayed them through model_scene.js
+* implemented shader used for props and car
+* prototyped features to illustrate to other team members <br />
+*Design* <br />
 * designed the game play, model and features to implement
-* designed and created the world including the track
-* created props and integrate and display them through model_scene
-* implemented and integrated bump map shader
+* prototyped features for others
+* designed and created the world including the track, props, and shadows
+* designed props and prototyped them for other team members
 
-
+To better fit the team's task allocation and benefit all team members, I was in charge of both design and engineering of this project because of my skills in arts and design in addition to software engineering skills. I designed the game play, models and features to implement after arranging meetings with all members. I designed the world layout including the track and props. I designed and created 12 props integrated into the game for players and also contributed to the shadow all props and car have. I wrote shader for rendering props and the car. I prototyped features that other engineers can develope. I did both high level and ground level contribution to this project, and it was rewarding!
 
 ### 3. Details on how to run
 If you are a mac user, double click on `host.command` to start the server
