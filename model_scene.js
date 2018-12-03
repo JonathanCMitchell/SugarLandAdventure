@@ -1,3 +1,26 @@
+class Bump_Map extends Phong_Shader
+{ fragment_glsl_code()           // ********* FRAGMENT SHADER ********* 
+    { return `
+        uniform sampler2D texture;
+        void main()
+        { if( GOURAUD || COLOR_NORMALS )    // Do smooth "Phong" shading unless options like "Gouraud mode" are wanted instead.
+          { gl_FragColor = VERTEX_COLOR;    // Otherwise, we already have final colors to smear (interpolate) across vertices.            
+            return;
+          }                                 // If we get this far, calculate Smooth "Phong" Shading as opposed to Gouraud Shading.
+                                            // Phong shading is not to be confused with the Phong Reflection Model.
+          
+          vec4 tex_color = texture2D( texture, f_tex_coord );                    // Use texturing as well.
+          vec3 bumped_N  = normalize( N + tex_color.rgb - .5*vec3(1,1,1) );      // Slightly disturb normals based on sampling
+                                                                                 // the same image that was used for texturing.
+                                                                   
+                                                                                 // Compute an initial (ambient) color:
+          if( USE_TEXTURE ) gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
+          else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
+          gl_FragColor.xyz += phong_model_lights( bumped_N );                    // Compute the final color with contributions from lights.
+        }`;
+    }
+}
+
 class Model extends Shape {
     constructor(name, size=1) {
         super("positions", "normals", "texture_coords");
@@ -150,6 +173,7 @@ class model_scene extends Scene_Component {
 		this.model("cookie.jpg",1);
 		this.model("cone1.jpg",0.5);
 		this.model("donut.jpg",1);
+		this.model("cake.jpg",1);
         this.submit_shapes(context, this.shapes);
 		this.materials["shadow"] = context.get_instance(Shadow_Shader)
 			.material(Color.of(0,0,0,1),
