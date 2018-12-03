@@ -11,7 +11,8 @@ Contributions:
 * Collision detection
 
 Car movement mechanics: 
-I designed the car mechanics by creating a grid of road blocks, and allowing the car to move forward, backward, turn left and turn right. I did this by placing the camera at the origin and manipulating a 2D array of transformation matrices. I decided early on that I would move the road instead of the camera. 
+I designed the car mechanics by creating a grid of road blocks, and allowing the car to move forward, backward, turn left and turn right. I did this by placing the camera at the origin and manipulating a 2D array of transformation matrices. Moreover, I implemented the translation and rotational matrix operations to move the road in various orientations, and the triggers and states to do so, using a `step_size` as a translational coefficient that is analogous to my speed. I decided early on that I would move the road instead of the camera.
+
 I did this early on because I didn't want to have to compute an inverse (because of the computational load). So when the car moves forward, the world is actually moving backwards. There were challenges in providing acceleration and deceleration mechanics. The car begins to accelerate if you press the acceleration button, but if you let go, it will continue to move forward until it stops. Features like this made the whole game more realistic, and they were the most challenging part of the whole project for me. When determining the right values / constants for acceleration, deceleration and rotation I coordinated with Calvin, because he was in the process of making the track. Together, we found the optimal acceleration and turning values so that our mechanics would meet the game's design requirements. Furthermore, he also provided great insight into managing the display() function by helping me organize the state variable's flags.
 
 Data structures:
