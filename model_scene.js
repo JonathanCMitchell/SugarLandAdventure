@@ -153,7 +153,8 @@ class model_scene extends Scene_Component {
 		this.model("cake.jpg",1);
 		this.model("lime.jpg",1);
 		this.model("cow.jpg",1);
-		this.model("ice.jpg",0.5);
+		this.model("ice.jpg",0.3);
+		this.model("ice1.png",1);
         this.submit_shapes(context, this.shapes);
 		this.materials["shadow"] = context.get_instance(Shadow_Shader)
 			.material(Color.of(0,0,0,1),
