@@ -154,6 +154,7 @@ class model_scene extends Scene_Component {
 		this.model("lime.jpg",1);
 		this.model("cow.jpg",1);
 		this.model("ice.jpg",0.3);
+		this.model("gingerbreadman.png",0.2);
 		// this.model("pocky.png",1);
 		// this.model("ice1.png",0.5);
         this.submit_shapes(context, this.shapes);
