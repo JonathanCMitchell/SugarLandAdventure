@@ -289,9 +289,9 @@ class model_scene extends Scene_Component {
 			this.shape[3].draw(state, this.tran[3], this.materials["shadow"]);
 		}
 		var text = "";
-		text += ("     ");
+		text += ("00000"+this.rate.toFixed(2)).slice(-5);
 		text += "     Sugarland Adventure     ";
-		text += ("     ");
+		text += ("00000"+parseInt(time)).slice(-5);
 		text += "\n\n\n\n\n\n\n\n\n\n";
 		if (this.render[3]>0) this.panel(0,drive,text);
     }
