@@ -61,6 +61,7 @@ Contributions: <br />
 * integrated and displayed them through model_scene.js
 * implemented shader used for props and car
 * prototyped features to illustrate to other team members <br />
+
 *Design* <br />
 * designed the game play, model and features to implement
 * prototyped features for others
