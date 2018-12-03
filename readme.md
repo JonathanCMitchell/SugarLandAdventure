@@ -1,5 +1,7 @@
 ### 1. Description
-TODO: 
+Sugarland Adventure is a driving simulator with a candyland-like theme. Take the car for a spin around a small track we have designed and enjoy the cute, delicious props we made to accompany the track! 
+
+Basic car movements are as follows: Forward - W, Reverse - S, Left - A, Right - D, Ludicrous mode - L
 
 ### 2. Contributions
 Jonathan Mitchell
@@ -17,6 +19,22 @@ The road is comprised of 2x2 blocks. When we drive the car we are simply driving
 
 Collision Detection:
 Because of the decisions made earlier to keep the camera at the origin, and to keep track of all the blocks using `this.box_grid`, I was able to implement collision detection. On each frame we simply check the `x` and `z` coordinates of each box to see if they are within a certain distance from the origin. If so, we assume they have collided and we trigger our collision action. In practice, the hardest part was managing the display() function, and using flags with a global state member variable conditioned on the road class in order to keep track of our current state.
+
+Calvin Pham
+Contributions:
+* Car movement mechanics (accelerate, decelerate, turn right, left, reverse, ludicrous mode)
+* Texture mapping the world
+* Particle effects
+
+Car movement mechanics:
+I worked with Jonathon to help build the basic movements for the car. Like Jonathon mentioned above, we decided to move the world instead of the camera to give the illusion that the car was moving across the map. Together, we designed a state machine for the car to implement the basic movements (accelerate, turn right, turn left, and reverse) based on keyboard keys that were being pressed. We also incorporated deceleration states that would kick in after the user either drives forward or backwards so that the car would not come to a complete stop once the accelerate/reverse keys were no longer pressed. We spent a fair amount debugging and trying different acceleration, turning, and deceleration values to make the game look as smooth as possible.
+
+Texture mapping the world:
+When the high-level design of the track was complete, I proceeded to texture the world with textures I found online and some road textures provided by Faith. In `road_scene.js` I included an array called `box_grid_map` which has the same dimensions as `box_grid` - another array that holds the transformation matrices for all boxes comprising our world. There is a direct one-to-one correspondence between the elements in `box_grid_map` and `box_grid`, i.e to determine what type of box whose indices are i,j should be in the world, one can use the same indices to access `box_grid_map` and find out. The specified type for each box/element within `box_grid_map` were used when developing collision detection and to find out where to render props. Each box in the world can take on one of four general forms: border, grass, prop, or road, and this sort of organization allowed us reuse textures in the world instead of having 20 * 20 = 400 textures in our `assets` folder. The car/camera can drive over grass or road blocks, but will collide with border or prop blocks. 
+
+Particle effects:
+To make ludicrous mode a little more interesting and not just a mere speed-up of the car, we decided to add particle effects that would be visible whenever the player enters into this mode. Specifically, blue particles to signify nitrous and smoke will come out from behind the car. These particles are given a random translation of a short distance from the car's "exhaust" and also a random rotation to improve the effect visually. These particles also move with the world when turning left and right to mimic actual flames or smoke that come from an actual car. 
+
 
 Minnie Tu
 Contribution:
@@ -36,7 +54,10 @@ model_scene.js (340 lines)
     font, sky dome, car, road, cookie, ice bar, lollipop, swirl candy, twist candy
 
 ### 3. Details on how to run
+If you are a mac user, double click on `host.command` to start the server
+If you are a windows user, double click on `host.bat` to start the server
 
+After the server is started, in your web browswer (preferably Chrome) go to `localhost:8000`
 
 ### 4. Extra:
 
