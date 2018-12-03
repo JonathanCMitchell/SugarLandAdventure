@@ -114,7 +114,7 @@ class road_scene extends Scene_Component
       
     make_control_panel()
       { 
-        this.key_triggered_button( "View world",  [ "0" ], () => this.attached = () => this.initial_camera_location );
+        
         this.key_triggered_button( "Forward",  [ "w" ], () => { 
           // toggle acceleration on
           this.state.accel = true
@@ -132,12 +132,7 @@ class road_scene extends Scene_Component
           this.state.decel = false
         });
 
-        this.key_triggered_button( "ludicrous mode",  [ "m" ], () => { 
-          this.state.ludicrous = true
-          // TODO: Shoot nitrous or fire out the back
-        }, '#'+Math.random().toString(9).slice(-6), () => {
-          this.state.ludicrous = false
-        });
+        
 
 
         this.key_triggered_button( "turn left",  [ "a" ], () => { 
@@ -176,20 +171,27 @@ class road_scene extends Scene_Component
             // this.transform_box_grid(transformation_mtx, 'rotate_right',0)  
           }
         });
-        this.key_triggered_button( "Attach to world", [ "1" ], () => this.attached = () => this.attach_world );
+        this.key_triggered_button( "ludicrous mode",  [ "m" ], () => { 
+          this.state.ludicrous = true
+          // TODO: Shoot nitrous or fire out the back
+        }, '#'+Math.random().toString(9).slice(-6), () => {
+          this.state.ludicrous = false
+        });
+        this.key_triggered_button( "View world",  [ "0" ], () => this.attached = () => this.initial_camera_location );
+        this.key_triggered_button( "Attach to car", [ "1" ], () => this.attached = () => this.attach_world );
         
-        this.key_triggered_button( "move forward",  [ "c" ], () => { 
-          const transformation_mtx = Mat4.identity()
-          // pass in the current transformation matrix
-          this.transform_box_grid(transformation_mtx, 'move_forward')
+//         this.key_triggered_button( "move forward",  [ "c" ], () => { 
+//           const transformation_mtx = Mat4.identity()
+//           // pass in the current transformation matrix
+//           this.transform_box_grid(transformation_mtx, 'move_forward')
           
-        });
+//         });
 
-        this.key_triggered_button( "move backward",  [ "v" ], () => { 
-          const transformation_mtx = Mat4.identity()
-          // pass in the current transformation matrix
-          this.transform_box_grid(transformation_mtx, 'move_backward')
-        });
+//         this.key_triggered_button( "move backward",  [ "v" ], () => { 
+//           const transformation_mtx = Mat4.identity()
+//           // pass in the current transformation matrix
+//           this.transform_box_grid(transformation_mtx, 'move_backward')
+//         });
         
       }
       
@@ -209,7 +211,7 @@ class road_scene extends Scene_Component
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[0], [1,0,0]))
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[1], [0,1,0]))
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[2], [0,0,1]))
-          this.shapes.box.draw(graphics_state, particle_model_transform.times(Mat4.scale([0.038, 0.038, 0.038])), this.materials.particle)
+          this.shapes.box.draw(graphics_state, particle_model_transform.times(Mat4.scale([0.035, 0.035, 0.035])), this.materials.particle)
           this.particles_array[i].lifetime = this.particles_array[i].lifetime + 1
       }
 
@@ -533,7 +535,7 @@ class road_scene extends Scene_Component
             this.particles_array.push({matrix: Mat4.identity().times(Mat4.translation([-0.7,1.2,0])), 
             lifetime: 0, rot: [Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI ], 
             trans: [0, Math.random() * (0.05 - (-0.05)) - 0.05, Math.random() * (0.05 - (-0.05)) - 0.05]})
-            
+
             
         }
 
