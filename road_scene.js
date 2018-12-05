@@ -61,6 +61,17 @@ class road_scene extends Scene_Component
           ["border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border","border"]
         ]
         
+        this.audio = new Audio("happysong.mp3")
+        this.audio.volume = 0.5
+        const playPromise = this.audio.play().then(response => {
+    		console.log(response);
+		}).catch(e => {
+    		console.log(e.message);
+		});
+
+		this.boing = new Audio("boing.mp3")
+		this.boing.loop = false
+		
         this.box_grid = column_list
         this.particles_array = []
         this.step_size = 0
@@ -88,7 +99,7 @@ class road_scene extends Scene_Component
             phong: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/gravel.jpg", true) } ),
             phong1: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6}),
             phong3: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/car.png", true)}),
-            particle: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, diffusivity: 0, specularity: 0, texture: context.get_instance("assets/nos.png", false) }),
+            particle: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, diffusivity: 0, specularity: 0, texture: context.get_instance("assets/fire_with_smoke.png", false) }),
             
       
     
@@ -211,7 +222,7 @@ class road_scene extends Scene_Component
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[0], [1,0,0]))
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[1], [0,1,0]))
           particle_model_transform = particle_model_transform.times(Mat4.rotation(this.particles_array[i].rot[2], [0,0,1]))
-          this.shapes.box.draw(graphics_state, particle_model_transform.times(Mat4.scale([0.035, 0.035, 0.035])), this.materials.particle)
+          this.shapes.box.draw(graphics_state, particle_model_transform.times(Mat4.scale([0.04, 0.04, 0.04])), this.materials.particle)
           this.particles_array[i].lifetime = this.particles_array[i].lifetime + 1
       }
 
@@ -411,8 +422,12 @@ class road_scene extends Scene_Component
       } else if (kind == 'ludicrous_forward') {
         return Mat4.translation([3 * -this.step_size, 0, 0]).times(box)
       } else if (kind == 'collision_forward') {
+          console.log("boing1")
+          this.boing.play()
         return Mat4.translation([+1.5, 0, 0]).times(box)
       } else if (kind == 'collision_backward') {
+          console.log("boing2")
+          this.boing.play()
         return Mat4.translation([-1.5, 0, 0]).times(box)
       }  else {
         // do nothing
@@ -532,9 +547,15 @@ class road_scene extends Scene_Component
 
         if (this.state.ludicrous)
         {
-            this.particles_array.push({matrix: Mat4.identity().times(Mat4.translation([-0.7,1.2,0])), 
-            lifetime: 0, rot: [Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI ], 
-            trans: [0, Math.random() * (0.05 - (-0.05)) - 0.05, Math.random() * (0.05 - (-0.05)) - 0.05]})
+            //for (var i = 0; i < 3; i++)
+            //{
+                this.particles_array.push({matrix: Mat4.identity().times(Mat4.translation([-0.7,1.2,0])), 
+                lifetime: 0, rot: [Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI, Math.random() * 2 *Math.PI ], 
+                trans: [0, Math.random() * (0.05 - (-0.05)) - 0.05, Math.random() * (0.05 - (-0.05)) - 0.05]})
+                
+
+            //}
+            
 
             
         }

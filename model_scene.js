@@ -9,6 +9,8 @@ class Model extends Shape {
 		for (var i=0; i<vertex.length; i++) {
 			vertex[i] *= size;
 		}
+
+		
 		this.positions.push(vertex);
 		this.normals.push(mesh.data.attributes.normal.array);
 		this.texture_coords.push(mesh.data.attributes.uv.array);

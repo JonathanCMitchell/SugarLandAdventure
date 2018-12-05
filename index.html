@@ -11,14 +11,19 @@
 <script src=   "model_scene.js" ></script>
 <script src=   "shadow_shader.js" ></script>
 </head>
+<audio id="test" src="happysong.mp3"></audio>
 
 <body style="background: DarkGray">       <!-- Begin typing your web page here. //-->
 
                               <!-- The following code embeds a WebGL canvas panel widget with certain scenes and their controls. //-->
 <div id="main-canvas" class="canvas-widget"></div>
 <script> "use strict"     // ********************* THE ENTRY POINT OF YOUR WHOLE PROGRAM STARTS HERE ********************* 
-                                           // Use this code to embed a widget into any web page.  The widget inclues a 3D WebGL area
-                                           // (an HTML canvas) and various panels of controls.
+                                    // Use this code to embed a widget into any web page.  The widget inclues a 3D WebGL area
+  
+//   var background_music = new Audio("/assets/happysong.wav");
+// background_music.volume = 0.1;
+// background_music.loop = true;
+// background_music.play();                                       // (an HTML canvas) and various panels of controls.
   const scenes = [
 		"road_scene",    // First, list the names of scenes we will add to our canvas.  These will register 
 		"model_scene",
