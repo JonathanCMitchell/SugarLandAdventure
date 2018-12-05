@@ -62,6 +62,7 @@ class road_scene extends Scene_Component
         ]
         
         this.audio = new Audio("happysong.mp3")
+        this.audio.loop = true
         this.audio.volume = 0.5
         const playPromise = this.audio.play().then(response => {
     		console.log(response);
