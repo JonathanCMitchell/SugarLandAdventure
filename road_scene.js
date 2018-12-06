@@ -97,9 +97,9 @@ class road_scene extends Scene_Component
         this.submit_shapes( context, shapes );
         this.materials =
           { 
-            phong: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/gravel.jpg", true) } ),
-            phong1: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6}),
-            phong3: context.get_instance( Phong_Shader ).material( Color.of( 1,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/car.png", true)}),
+            phong: context.get_instance( Bump_Map ).material( Color.of( 0,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/gravel.jpg", true) } ),
+            phong1: context.get_instance( Bump_Map ).material( Color.of( 1,0,0,1 ), { ambient:0.6}),
+            phong3: context.get_instance( Bump_Map ).material( Color.of( 1,0,0,1 ), { ambient:0.6, texture: context.get_instance("assets/car.png", true)}),
             particle: context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), { ambient: 1, diffusivity: 0, specularity: 0, texture: context.get_instance("assets/fire_with_smoke.png", false) }),
             
       
