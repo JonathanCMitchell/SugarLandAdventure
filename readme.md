@@ -1,3 +1,9 @@
+### To run
+```
+./host.bat
+```
+
+
 ### 1. Description
 Sugarland Adventure is a driving simulator with a candyland-like theme. Take the car for a spin around a small track we have designed and enjoy the cute, delicious props we made to accompany the track! 
 
